@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+
+<html lang="lt">
+<head>
+<meta charset="utf-8"/>
+<title>Užsakymo forma | Namiele</title>
+<style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F7F6F4;
+            color: #0E0A07;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        header img {
+            max-height: 80px;
+        }
+
+        h1 {
+            font-weight: 300;
+            text-align: center;
+            font-size: 28px;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        form {
+            max-width: 720px;
+            margin: 20px auto;
+            padding: 40px 30px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin: 18px 0 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 15px;
+            background-color: #fff;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        input:focus, select:focus {
+            border-color: #92B1D0;
+            outline: none;
+        }
+
+        select option[disabled][selected] {
+            color: #999;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 14px 24px;
+            font-size: 16px;
+            background-color: #92B1D0;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #7c9dbf;
+        }
+
+        .submit-button {
+            margin-left: auto;
+        }
+
+        .error {
+            color: red;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .progress-container {
+            height: 6px;
+            background-color: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #92B1D0;
+            transition: width 0.3s ease-in-out;
+        }
+
+</style>
+</head>
+<body>
+<header>
+<h1>Kliento užsakymo forma</h1>
+</header>
+<form id="clientForm">
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<!-- Step 1 -->
+<div class="step active">
+<label>Koks yra kliento vardas?</label>
+<input name="vardas" placeholder="Vardenis Pavardenis" required="" type="text"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Koks yra kliento el. pašto adresas?</label>
+<input name="email" placeholder="vardenis@gmail.com" required="" type="email"/>
+<div class="error">Įveskite galiojantį el. pašto adresą.</div>
+<label>Koks yra kliento telefono numeris?</label>
+<input name="telefonas" placeholder="+37061321321" required="" type="tel"/>
+<div class="error">Įveskite galiojantį telefono numerį.</div>
+<div class="button-row">
+<button onclick="nextStep()" type="button">Toliau</button>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="step">
+<label>Kokios paskirties yra kliento žemės sklypas?</label>
+<select name="zemes_paskirtis" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Gyvenamoji">Gyvenamosios paskirties žemė</option>
+<option value="Rekreacine">Rekreacinės paskirties žemė</option>
+<option value="Zemes ukio">Žemės ūkio paskirties žemė</option>
+<option value="Misku ukio">Miškų ūkio paskirties žemė</option>
+<option value="Pramones">Pramonės ir sandėliavimo paskirties žemė</option>
+<option value="Kita">Kitos paskirties žemė</option>
+</select>
+<div class="error">Pasirinkite paskirtį.</div>
+<label>Kokio ploto (m²) namą planuoja statyti klientas?</label>
+<input name="namo_plotas" placeholder="162.93" required="" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Kokios energetinės klasės namo pageidauja klientas?</label>
+<select name="energetine_klase" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="A++">A++</option>
+<option value="Žemiau A++">Žemiau A++</option>
+</select>
+<div class="error">Pasirinkite klasę.</div>
+<label>Kurį pasiūlymo paketą renkasi klientas?</label>
+<select name="paketas" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Economy">Economy</option>
+<option value="Premium">Premium</option>
+<option value="Premium +">Premium +</option>
+<option value="Ultra">Ultra</option>
+<option value="Ultra +">Ultra +</option>
+</select>
+<div class="error">Pasirinkite paketą.</div>
+<div class="button-row">
+<button onclick="prevStep()" type="button">Atgal</button>
+<button onclick="nextStep()" type="button">Toliau</button>
+</div>
+</div>
+<!-- Additional steps would go here -->
+<!-- Step 3 -->
+<div class="step">
+<label>Koks turėtų būti kliento namo vidaus plotas (su vidinėmis sienomis), m²?</label>
+<input name="vidaus_plotas" placeholder="50.12" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Kiek metrų sudaro kliento namo vidaus sienų ilgis bėginiais metrais?</label>
+<input name="sienu_ilgis" placeholder="8.12" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Koks turėtų būti kliento namo vidaus plotis, m?</label>
+<input name="namo_plotis" placeholder="5.1" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Koks turėtų būti priekinės kliento namo sienos aukštis, m?</label>
+<input name="priekines_sienos_aukstis" placeholder="3.75" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Koks turėtų būti galinės kliento namo sienos aukštis, m?</label>
+<input name="galines_sienos_aukstis" placeholder="2.66" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<div class="button-row">
+<button onclick="prevStep()" type="button">Atgal</button>
+<button onclick="nextStep()" type="button">Toliau</button>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="step">
+<label>Jei namas su daugiau nei vienu šlaitu – koks turėtų būti aukščiausios kliento namo sienos aukštis, m?</label>
+<input name="auksciausia_siena" placeholder="4.12" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Kiek šlaitų iš viso turėtų turėti kliento namo stogas?</label>
+<input name="slaitu_kiekis" placeholder="2" type="number"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Įrašykite objekto, kur bus statomas namas, lokaciją (adresą, miestą ar koordinates)</label>
+<input name="lokacija" placeholder="Vilnius" type="text"/>
+<div class="error">Šis laukelis yra privalomas.</div>
+<label>Langų pasirinkimas:</label>
+<div id="windowsSection">
+<div class="window-block" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+<select name="window_size[]" required="" style="flex: 1;">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="2000x2250">2000x2250</option>
+<option value="3600x2250">3600x2250</option>
+<option value="1000x2250">1000x2250</option>
+<option value="900x2250 LD">900x2250 LD</option>
+<option value="1800x2250">1800x2250</option>
+</select>
+<input min="0" name="window_qty[]" placeholder="Kiekis" required="" style="flex: 0.6;" type="number"/>
+<button class="remove-window" onclick="removeWindow(this)" style="color: red; font-size: 14px; background: none; border: none; cursor: pointer;" type="button">✕</button>
+</div>
+</div>
+<button onclick="addWindow()" style="margin-top: 10px; background-color: #92B1D0; color: white; padding: 10px 20px; border: none; border-radius: 12px;" type="button">+ Pridėti langą</button>
+<div class="button-row">
+<button onclick="prevStep()" type="button">Atgal</button>
+<button onclick="nextStep()" type="button">Toliau</button>
+</div>
+</div>
+<!-- Submission step -->
+<div class="step">
+<p>Visi duomenys užpildyti. Spauskite „Pateikti“ norėdami išsiųsti formą.</p>
+<div class="button-row">
+<button onclick="prevStep()" type="button">Atgal</button>
+<button class="submit-button" type="submit">Pateikti</button>
+</div>
+</div>
+</form>
+<script>
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step');
+
+        
+        const progressBar = document.getElementById("progressBar");
+
+        function updateProgressBar() {
+            const percent = ((currentStep + 1) / steps.length) * 100;
+            progressBar.style.width = percent + "%";
+        }
+
+        function showStep(index) {
+            steps.forEach((step, i) => step.classList.toggle('active', i === index));
+            updateProgressBar();
+        }
+
+        updateProgressBar(); // initial
+
+function showStep(index) {
+            steps.forEach((step, i) => step.classList.toggle('active', i === index));
+        }
+
+        function validateStep(stepIndex) {
+            const step = steps[stepIndex];
+            const inputs = step.querySelectorAll('input, select');
+            let valid = true;
+
+            inputs.forEach(input => {
+                const error = input.nextElementSibling;
+                if (input.hasAttribute('required')) {
+                    if (!input.value.trim()) {
+                        error.style.display = 'block';
+                        valid = false;
+                    } else {
+                        error.style.display = 'none';
+                    }
+                }
+                if (input.type === 'email' && input.value) {
+                    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!re.test(input.value)) {
+                        error.style.display = 'block';
+                        valid = false;
+                    }
+                }
+            });
+
+            return valid;
+        }
+
+        
+        function nextStep() {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+    
+    updateProgressBar();
+            if (validateStep(currentStep)) {
+                currentStep++;
+                if (currentStep < steps.length) showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+    updateProgressBar();
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        document.getElementById("clientForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            alert("Forma išsiųsta!");
+            window.location.reload();
+        });
+    </script>
+<script>
+  function addWindow() {
+    const container = document.getElementById("windowsSection");
+    const newBlock = container.firstElementChild.cloneNode(true);
+    newBlock.querySelectorAll("input, select").forEach(el => el.value = "");
+    container.appendChild(newBlock);
+  }
+
+  function removeWindow(button) {
+    const container = document.getElementById("windowsSection");
+    if (container.children.length > 1) {
+      button.parentElement.remove();
+    }
+  }
+</script>
+
+
+
+<a href="https://www.namiele.lt/" target="_blank" aria-label="Namiele pagrindinis puslapis">
+  <img src="https://cdn.brandfetch.io/idGYJwW34f/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B" 
+       alt="Namiele logotipas" 
+       style="position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; max-width: 20vw; max-height: 20vw; opacity: 1; z-index: 1000; border-radius: 12px;">
+</a>
+
+</body>
+</html>
