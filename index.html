@@ -168,7 +168,7 @@
 <option value="Kita">Kitos paskirties žemė</option>
 </select>
 <div class="error">Pasirinkite paskirtį.</div>
-<label>Kokio ploto (m²) namą planuoja statyti klientas?</label>
+<label>Koks yra pageidaujamas namo vidaus plotas, įskaitant vidines sienas?</label>
 <input name="namo_plotas" placeholder="162.93" required="" type="number"/>
 <div class="error">Šis laukelis yra privalomas.</div>
 <label>Kokios energetinės klasės namo pageidauja klientas?</label>
@@ -176,6 +176,7 @@
 <option disabled="" selected="" value="">Pasirinkite</option>
 <option value="A++">A++</option>
 <option value="Žemiau A++">Žemiau A++</option>
+<option value="Vasarnamis">Vasarnamis</option>
 </select>
 <div class="error">Pasirinkite klasę.</div>
 <label>Kurį pasiūlymo paketą renkasi klientas?</label>
@@ -196,9 +197,17 @@
 <!-- Additional steps would go here -->
 <!-- Step 3 -->
 <div class="step">
-<label>Koks turėtų būti kliento namo vidaus plotas (su vidinėmis sienomis), m²?</label>
-<input name="vidaus_plotas" placeholder="50.12" type="number"/>
+    <label>Koks yra pageidaujamas antresolės karkaso plotas?</label>
+<input name="antresoles_karkaso_plotas" placeholder="8.12" type="number"/>
 <div class="error">Šis laukelis yra privalomas.</div>
+<label>Kokio tipo pamatų pageidauja klientas?</label>
+<select name="pamatai" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Sraigtiniai">Sraigtiniai</option>
+<option value="Betoniniai Poliams">Betoniniai Poliams</option>
+<option value="Betoniniai Rostverkas">Betoniniai Rostverkas</option>
+</select>
+<div class="error">Pasirinkite Pamatus.</div>
 <label>Kiek metrų sudaro kliento namo vidaus sienų ilgis bėginiais metrais?</label>
 <input name="sienu_ilgis" placeholder="8.12" type="number"/>
 <div class="error">Šis laukelis yra privalomas.</div>
@@ -221,12 +230,88 @@
 <label>Jei namas su daugiau nei vienu šlaitu – koks turėtų būti aukščiausios kliento namo sienos aukštis, m?</label>
 <input name="auksciausia_siena" placeholder="4.12" type="number"/>
 <div class="error">Šis laukelis yra privalomas.</div>
-<label>Kiek šlaitų iš viso turėtų turėti kliento namo stogas?</label>
-<input name="slaitu_kiekis" placeholder="2" type="number"/>
+<label>Kokio tipo stogo šlaito pageidauja klientas?</label>
+<select name="Slaito Tipas" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Vienaslaitis">Vienašlaitis</option>
+<option value="Dvislaitis">Dvišlaitis</option>
+<option value="Daugiaslaitis">Daugiaslaitis</option>
+<option value="Lygus">Lygus</option>
+</select>
+<div class="error">Pasirinkite stogo šlaito tipą.</div>
+<label>Įrašykite objekto, kur bus statomas namas, lokaciją (adresą, miestą )</label>
+<input name="lokacija" placeholder="Vilnius, Lietuva" type="text"/>
 <div class="error">Šis laukelis yra privalomas.</div>
-<label>Įrašykite objekto, kur bus statomas namas, lokaciją (adresą, miestą ar koordinates)</label>
-<input name="lokacija" placeholder="Vilnius" type="text"/>
-<div class="error">Šis laukelis yra privalomas.</div>
+<label>Kokio tipo stogo dangos pageidauja klientas?</label>
+<select name="Stogo Danga" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Skardinė danga - Classic">Skardinė danga - Classic</option>
+<option value="Bituminė stogo danga">Bituminė stogo danga</option>
+<option value="EPDM stogo danga">EPDM stogo danga</option>
+</select>
+<div class="error">Pasirinkite stogo dangos tipą.</div>
+<label>Ar projektas yra kliento (reikalaus daugiau korekcijų), ar mūsų (su minimaliais pakeitimais)?</label>
+<select name="Projekto tipas" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="Mūsų">Mūsų</option>
+<option value="Kliento">Kliento</option>
+</select>
+<div class="error">Pasirinkite stogo dangos tipą.</div>
+<div class="button-row">
+<button onclick="prevStep()" type="button">Atgal</button>
+<button onclick="nextStep()" type="button">Toliau</button>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="step">
+<style>
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 20px;
+    margin-bottom: 30px;
+  }
+
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+  }
+
+  .checkbox-section-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 20px 0 10px;
+  }
+</style>
+
+<!-- Papildomi elementai -->
+<div class="checkbox-section-title">Ar reikalingi papildomi elementai?</div>
+<div class="checkbox-group">
+  <label><input type="checkbox" name="papildomi[]" value="Šild. grindys"> Šild. grindys</label>
+  <label><input type="checkbox" name="papildomi[]" value="Kaminas"> Kaminas</label>
+  <label><input type="checkbox" name="papildomi[]" value="OSB sienoms"> OSB sienoms</label>
+  <label><input type="checkbox" name="papildomi[]" value="Rekup. mini"> Rekup. mini</label>
+   <label><input type="checkbox" name="papildomi[]" value="Rekup. norm."> Rekup. norm.</label>
+    <label><input type="checkbox" name="papildomi[]" value="Kondiš. 1"> 	Kondiš. 1</label>
+    <label><input type="checkbox" name="papildomi[]" value="Kondiš. 2"> Kondiš. 2</label>
+    <label><input type="checkbox" name="papildomi[]" value="Gipsas"> Gipsas</label>
+</div>
+
+<!-- Papildomi darbai -->
+<div class="checkbox-section-title">Pasirinkite papildomus darbus:</div>
+<div class="checkbox-group">
+  <label><input type="checkbox" name="darbai[]" value="MPP (sienų plokštė)"> MPP (sienų plokštė)</label>
+  <label><input type="checkbox" name="darbai[]" value="Fasado dažymas"> Fasado dažymas</label>
+</div>
+    <label>Koks langų tipas</label>
+<select name="Langų tipas" required="">
+<option disabled="" selected="" value="">Pasirinkite</option>
+<option value="PVC langai">PVC langai</option>
+<option value="Aliuminiai langai">Aliuminiai langai</option>
+</select>
+<div class="error">Pasirinkite lango tipą.</div>
 <label>Langų pasirinkimas:</label>
 <div id="windowsSection">
 <div class="window-block" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
