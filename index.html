@@ -255,6 +255,7 @@
 <option disabled="" selected="" value="">Pasirinkite</option>
 <option value="Mūsų">Mūsų</option>
 <option value="Kliento">Kliento</option>
+<option value="Org Projektas">Org Projektas</option>
 </select>
 <div class="error">Pasirinkite stogo dangos tipą.</div>
 <div class="button-row">
@@ -442,9 +443,30 @@ document.querySelector("form").addEventListener("submit", async function (e) {
 
   const formData = new FormData(this);
   const json = {};
+  const temp = {};
+
   formData.forEach((value, key) => {
-    json[key] = value;
+    if (key === "window_size[]") {
+      if (!temp.window_sizes) temp.window_sizes = [];
+      temp.window_sizes.push(value);
+    } else if (key === "window_qty[]") {
+      if (!temp.window_qtys) temp.window_qtys = [];
+      temp.window_qtys.push(value);
+    } else if (key.endsWith('[]')) {
+      const cleanKey = key.replace('[]', '');
+      if (!json[cleanKey]) json[cleanKey] = [];
+      json[cleanKey].push(value);
+    } else {
+      json[key] = value;
+    }
   });
+
+  if (temp.window_sizes && temp.window_qtys) {
+    json.windows = temp.window_sizes.map((size, index) => ({
+      size,
+      qty: temp.window_qtys[index] || ""
+    }));
+  }
 
   try {
     const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
@@ -466,5 +488,6 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   }
 });
 </script>
+
 </body>
 </html>
