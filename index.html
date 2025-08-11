@@ -335,7 +335,7 @@
 </div>
 </div>
 <!-- Submission step -->
-<div class="step active">
+<div class="step">
 <p>Visi duomenys užpildyti. Spauskite „Pateikti“ norėdami išsiųsti formą.</p>
 <div class="button-row">
 <button onclick="prevStep()" type="button">Atgal</button>
@@ -445,35 +445,95 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   const json = {};
   const temp = {};
 
+  // helper: make safe keys (handles LT letters + punctuation)
+  function makeKey(text) {
+    const map = { 'ą':'a','č':'c','ę':'e','ė':'e','į':'i','š':'s','ų':'u','ū':'u','ž':'z',
+                  'Ą':'A','Č':'C','Ę':'E','Ė':'E','Į':'I','Š':'S','Ų':'U','Ū':'U','Ž':'Z' };
+    const ascii = text.split('').map(ch => map[ch] ?? ch).join('');
+    return ascii
+      .replace(/\./g,'')           // remove dots
+      .replace(/\s+/g,'_')         // spaces -> _
+      .replace(/[^A-Za-z0-9_]/g,'_') // other punctuation -> _
+      .replace(/_+/g,'_')          // collapse __
+      .replace(/^_|_$/g,'');       // trim _
+  }
+
   formData.forEach((value, key) => {
     if (key === "window_size[]") {
-      if (!temp.window_sizes) temp.window_sizes = [];
-      temp.window_sizes.push(value);
+      (temp.window_sizes ??= []).push(value);
     } else if (key === "window_qty[]") {
-      if (!temp.window_qtys) temp.window_qtys = [];
-      temp.window_qtys.push(value);
-    } else if (key.endsWith('[]')) {
-      const cleanKey = key.replace('[]', '');
-      if (!json[cleanKey]) json[cleanKey] = [];
-      json[cleanKey].push(value);
+      (temp.window_qtys ??= []).push(value);
+    } else if (key.endsWith("[]")) {
+      const cleanKey = key.replace("[]", "");
+      (json[cleanKey] ??= []).push(value);
     } else {
       json[key] = value;
     }
   });
 
+  // ----- WINDOWS -----
   if (temp.window_sizes && temp.window_qtys) {
-    json.windows = temp.window_sizes.map((size, index) => ({
+    json.windows = temp.window_sizes.map((size, i) => ({
       size,
-      qty: temp.window_qtys[index] || ""
+      qty: temp.window_qtys[i] || ""
     }));
   }
 
+  // get all declared sizes from the <select> (future-proof)
+  const sizeOptions = Array.from(
+    document.querySelectorAll('select[name="window_size[]"] option')
+  ).map(o => o.value).filter(v => v && v !== "Pasirinkite");
+
+  // init zeros
+  const windowFlat = {};
+  sizeOptions.forEach(s => {
+    const key = "windows_" + s.replace(/\W+/g, "_");
+    windowFlat[key] = 0;
+  });
+
+  // sum selections
+  (json.windows ?? []).forEach(w => {
+    if (!w.size) return;
+    const key = "windows_" + w.size.replace(/\W+/g, "_");
+    const n = Number(w.qty || 0);
+    windowFlat[key] = (windowFlat[key] ?? 0) + (isNaN(n) ? 0 : n);
+  });
+
+  Object.assign(json, windowFlat);
+
+  // ----- PAPILDOMI ELEMENTAI (checkboxes -> 0/1 columns) -----
+  const allPapildomiValues = Array.from(
+    document.querySelectorAll('input[type="checkbox"][name="papildomi[]"]')
+  ).map(i => i.value);
+
+  allPapildomiValues.forEach(v => {
+    json["papildomi_" + makeKey(v)] = 0;
+  });
+
+  (json.papildomi ?? []).forEach(v => {
+    const k = "papildomi_" + makeKey(v);
+    json[k] = (json[k] ?? 0) + 1; // 1 if checked (sums if ever duplicated)
+  });
+
+  // ----- PAPILDOMI DARBAI (checkboxes -> 0/1 columns) -----
+  const allDarbaiValues = Array.from(
+    document.querySelectorAll('input[type="checkbox"][name="darbai[]"]')
+  ).map(i => i.value);
+
+  allDarbaiValues.forEach(v => {
+    json["darbai_" + makeKey(v)] = 0;
+  });
+
+  (json.darbai ?? []).forEach(v => {
+    const k = "darbai_" + makeKey(v);
+    json[k] = (json[k] ?? 0) + 1;
+  });
+
+  // ---- POST ----
   try {
     const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(json)
     });
 
@@ -488,6 +548,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   }
 });
 </script>
+
 
 </body>
 </html>
