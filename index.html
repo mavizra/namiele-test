@@ -138,7 +138,7 @@
 <header>
 <h1>Kliento užsakymo forma</h1>
 </header>
-<form id="clientForm">
+<form id="clientForm" novalidate>
 <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
 <!-- Step 1 -->
 <div class="step active">
@@ -362,9 +362,6 @@
 
         updateProgressBar(); // initial
 
-function showStep(index) {
-            steps.forEach((step, i) => step.classList.toggle('active', i === index));
-        }
 
         function validateStep(stepIndex) {
             const step = steps[stepIndex];
@@ -372,19 +369,15 @@ function showStep(index) {
             let valid = true;
 
             inputs.forEach(input => {
-                const error = input.nextElementSibling;
                 if (input.hasAttribute('required')) {
                     if (!input.value.trim()) {
-                        error.style.display = 'block';
                         valid = false;
                     } else {
-                        error.style.display = 'none';
                     }
                 }
                 if (input.type === 'email' && input.value) {
                     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!re.test(input.value)) {
-                        error.style.display = 'block';
                         valid = false;
                     }
                 }
@@ -440,7 +433,14 @@ function showStep(index) {
 <script>
 document.querySelector("form").addEventListener("submit", async function (e) {
   e.preventDefault();
-
+// Validate all steps before sending
+for (let i = 0; i < steps.length; i++) {
+  if (!validateStep(i)) {
+    currentStep = i;
+    showStep(i);
+    return; // stop submitting; user fixes the invalid step
+  }
+}
   const formData = new FormData(this);
   const json = {};
   const temp = {};
