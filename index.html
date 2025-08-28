@@ -143,6 +143,29 @@
           body.has-floating-comments-expanded { padding-bottom: 200px; }
         }
 </style>
+<style>
+  * { box-sizing: border-box; }
+  body { ... }
+  h1 { ... }
+  form { ... }
+  /* your other CSS */
+</style>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  let sessionId = qs.get("session");
+  if(!sessionId){
+    sessionId = (crypto.randomUUID && crypto.randomUUID()) 
+             || ("sess_" + Math.random().toString(36).slice(2));
+    const url = new URL(location.href);
+    url.searchParams.set("session", sessionId);
+    history.replaceState(null, "", url.toString());
+  }
+  window.__FORM_SESSION_ID__ = sessionId;
+})();
+</script>
+
 </head>
 <body>
 <header>
@@ -570,24 +593,35 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   allDarbaiValues.forEach(v => { json["darbai_" + makeKey(v)] = 0; });
   (json.darbai ?? []).forEach(v => { const k = "darbai_" + makeKey(v); json[k] = (json[k] ?? 0) + 1; });
 
-  try {
-    const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(json)
-    });
+ try {
+  // Grab session id from global (set by the autosave snippet) or from URL
+  const sessionId = window.__FORM_SESSION_ID__ 
+                 || new URL(location.href).searchParams.get("session") 
+                 || "unknown";
 
-    if (response.ok) {
-      alert("Form submitted successfully!");
-      this.reset();
-      // Clear persisted comments
-      sessionStorage.removeItem('namiele_comments_v1');
-      sessionStorage.removeItem('namiele_comments_collapsed');
-    } else {
-      alert("Submission failed. Try again.");
-    }
-  } catch (error) {
-    alert("Error: " + error.message);
+  const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Form-Session": sessionId   // <-- NEW header
+    },
+    body: JSON.stringify(json)       // <-- body unchanged
+  });
+
+  if (response.ok) {
+    alert("Form submitted successfully!");
+    this.reset();
+    // Clear persisted comments
+    sessionStorage.removeItem('namiele_comments_v1');
+    sessionStorage.removeItem('namiele_comments_collapsed');
+  } else {
+    alert("Submission failed. Try again.");
   }
+} catch (error) {
+  alert("Error: " + error.message);
+}
 });
 </script>
+
 </body>
 </html>
