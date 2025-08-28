@@ -1,14 +1,10 @@
-
 <!DOCTYPE html>
-
 <html lang="lt">
 <head>
 <meta charset="utf-8"/>
 <title>Užsakymo forma | Namiele</title>
 <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Helvetica Neue', sans-serif;
@@ -19,394 +15,419 @@
             line-height: 1.6;
         }
 
-        header {
-            text-align: center;
-            padding: 40px 20px 20px;
-        }
-
-        header img {
-            max-height: 80px;
-        }
+        header { text-align: center; padding: 40px 20px 20px; }
+        header img { max-height: 80px; }
 
         h1 {
-            font-weight: 300;
-            text-align: center;
-            font-size: 28px;
-            margin-top: 10px;
-            margin-bottom: 0;
+            font-weight: 300; text-align: center; font-size: 28px;
+            margin-top: 10px; margin-bottom: 0;
         }
 
         form {
-            max-width: 720px;
-            margin: 20px auto;
-            padding: 40px 30px;
-            background-color: white;
-            border-radius: 16px;
+            max-width: 720px; margin: 20px auto; padding: 40px 30px;
+            background-color: white; border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
         }
 
-        label {
-            font-weight: 600;
-            display: block;
-            margin: 18px 0 6px;
-        }
+        label { font-weight: 600; display: block; margin: 18px 0 6px; }
 
-        input, select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            font-size: 15px;
-            background-color: #fff;
+        input, select, textarea {
+            width: 100%; padding: 12px 14px; border: 1px solid #ccc;
+            border-radius: 10px; font-size: 15px; background-color: #fff;
             transition: border-color 0.2s ease-in-out;
         }
+        input:focus, select:focus, textarea:focus { border-color: #92B1D0; outline: none; }
 
-        input:focus, select:focus {
-            border-color: #92B1D0;
-            outline: none;
-        }
+        select option[disabled][selected] { color: #999; }
 
-        select option[disabled][selected] {
-            color: #999;
-        }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s ease-in; }
 
-        .step {
-            display: none;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity:1; transform:none;} }
 
-        .step.active {
-            display: block;
-            animation: fadeIn 0.4s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .button-row {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
+        .button-row { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 30px; }
 
         button {
-            padding: 14px 24px;
-            font-size: 16px;
-            background-color: #92B1D0;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.3s ease;
+            padding: 14px 24px; font-size: 16px; background-color: #92B1D0; color: #fff;
+            border: none; border-radius: 10px; cursor: pointer; transition: background 0.3s ease;
         }
+        button:hover { background-color: #7c9dbf; }
+        .submit-button { margin-left: auto; }
 
-        button:hover {
-            background-color: #7c9dbf;
-        }
-
-        .submit-button {
-            margin-left: auto;
-        }
-
-        .error {
-            color: red;
-            font-size: 13px;
-            margin-top: 6px;
-            display: none;
-        }
+        .error { color: red; font-size: 13px; margin-top: 6px; display: none; }
 
         .progress-container {
-            height: 6px;
-            background-color: #ddd;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 30px;
+            height: 6px; background-color: #ddd; border-radius: 3px; overflow: hidden; margin-bottom: 30px;
+        }
+        .progress-bar { height: 100%; width: 0%; background-color: #92B1D0; transition: width 0.3s ease-in-out; }
+
+        /* ---------- Floating Comments ---------- */
+        :root {
+          --comment-corner: br;       /* tl | tr | bl | br */
+          --comment-gap: 20px;        /* gap from edges */
+          --comment-width: 320px;
+          --comment-height: 180px;
+          --comment-z: 1100;          /* above logo (which is 1000) */
         }
 
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: #92B1D0;
-            transition: width 0.3s ease-in-out;
+        /* body padding when expanded so fields aren’t hidden behind the floating card */
+        body.has-floating-comments-expanded {
+          padding-bottom: 160px; /* keeps last inputs/tap targets clear */
         }
 
+        .comment-fab {
+          position: fixed;
+          z-index: var(--comment-z);
+          display: flex; align-items: center; gap: 10px;
+          max-width: min(92vw, var(--comment-width));
+          box-shadow: 0 10px 30px rgba(0,0,0,.12);
+          border-radius: 14px;
+          background: #fff;
+          border: 1px solid #e9e7e4;
+          overflow: hidden;
+          /* default corner: bottom-right */
+          bottom: calc(var(--comment-gap) + 100px); /* sits above fixed logo (80px + gap) */
+          right: var(--comment-gap);
+        }
+
+        /* Corner switching via data attribute (set on .comment-fab) */
+        .comment-fab[data-corner="br"] { bottom: calc(var(--comment-gap) + 100px); right: var(--comment-gap); }
+        .comment-fab[data-corner="bl"] { bottom: calc(var(--comment-gap) + 100px); left: var(--comment-gap); }
+        .comment-fab[data-corner="tr"] { top: var(--comment-gap); right: var(--comment-gap); bottom: auto; }
+        .comment-fab[data-corner="tl"] { top: var(--comment-gap); left: var(--comment-gap); bottom: auto; }
+
+        .comment-fab.collapsed {
+          width: auto; height: auto; padding: 0;
+        }
+
+        .comment-fab.collapsed .comment-body,
+        .comment-fab.collapsed .comment-title,
+        .comment-fab.collapsed .comment-actions .corner-toggle {
+          display: none;
+        }
+
+        .comment-title {
+          font-size: 13px; font-weight: 600; color: #333; padding: 10px 12px 0;
+        }
+
+        .comment-body { padding: 8px 12px 12px; }
+        .comment-body textarea {
+          resize: vertical; min-height: 110px; height: var(--comment-height);
+          width: 100%;
+        }
+
+        .comment-actions {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 8px 12px 12px; gap: 8px;
+        }
+
+        .comment-toggle {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 42px; height: 42px; border-radius: 50%;
+          background: #92B1D0; color: #fff; border: none; cursor: pointer;
+          font-size: 18px; line-height: 1;
+        }
+        .comment-toggle:hover { background: #7c9dbf; }
+
+        .corner-toggle {
+          font-size: 12px; background: #f3f2ef; color:#333;
+          border: 1px solid #e3e1dd; border-radius: 10px; padding: 6px 10px; cursor: pointer;
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 520px) {
+          :root { --comment-width: 92vw; }
+          .comment-body textarea { min-height: 90px; }
+          /* On very small screens, allow the box to sit at the very bottom */
+          .comment-fab[data-corner^="b"] { bottom: var(--comment-gap); }
+          body.has-floating-comments-expanded { padding-bottom: 200px; }
+        }
 </style>
 </head>
 <body>
 <header>
 <h1>Kliento užsakymo forma</h1>
 </header>
+
 <form id="clientForm" novalidate>
-<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-<!-- Step 1 -->
-<div class="step active">
-<label>Koks yra kliento vardas?</label>
-<input name="vardas" placeholder="Vardenis Pavardenis" required="" type="text"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Koks yra kliento el. pašto adresas?</label>
-<input name="email" placeholder="vardenis@gmail.com" required="" type="email"/>
-<div class="error">Įveskite galiojantį el. pašto adresą.</div>
-<label>Koks yra kliento telefono numeris?</label>
-<input name="telefonas" placeholder="+37061321321" required="" type="tel"/>
-<div class="error">Įveskite galiojantį telefono numerį.</div>
-<div class="button-row">
-<button onclick="nextStep()" type="button">Toliau</button>
-</div>
-</div>
-<!-- Step 2 -->
-<div class="step">
-<label>Kokios paskirties yra kliento žemės sklypas?</label>
-<select name="zemes_paskirtis" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Gyvenamoji">Gyvenamosios paskirties žemė</option>
-<option value="Rekreacine">Rekreacinės paskirties žemė</option>
-<option value="Zemes ukio">Žemės ūkio paskirties žemė</option>
-<option value="Misku ukio">Miškų ūkio paskirties žemė</option>
-<option value="Pramones">Pramonės ir sandėliavimo paskirties žemė</option>
-<option value="Kita">Kitos paskirties žemė</option>
-</select>
-<div class="error">Pasirinkite paskirtį.</div>
-<label>Koks yra pageidaujamas namo vidaus plotas, įskaitant vidines sienas?</label>
-<input name="namo_plotas" placeholder="162.93" required="" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Kokios energetinės klasės namo pageidauja klientas?</label>
-<select name="energetine_klase" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="A++">A++</option>
-<option value="Žemiau A++">Žemiau A++</option>
-<option value="Vasarnamis">Vasarnamis</option>
-</select>
-<div class="error">Pasirinkite klasę.</div>
-<label>Kurį pasiūlymo paketą renkasi klientas?</label>
-<select name="paketas" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Economy">Economy</option>
-<option value="Premium">Premium</option>
-<option value="Premium +">Premium +</option>
-<option value="Ultra">Ultra</option>
-<option value="Ultra +">Ultra +</option>
-</select>
-<div class="error">Pasirinkite paketą.</div>
-<div class="button-row">
-<button onclick="prevStep()" type="button">Atgal</button>
-<button onclick="nextStep()" type="button">Toliau</button>
-</div>
-</div>
-<!-- Additional steps would go here -->
-<!-- Step 3 -->
-<div class="step">
+  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+
+  <!-- Step 1 -->
+  <div class="step active">
+    <label>Koks yra kliento vardas?</label>
+    <input name="vardas" placeholder="Vardenis Pavardenis" required type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Koks yra kliento el. pašto adresas?</label>
+    <input name="email" placeholder="vardenis@gmail.com" required type="email"/>
+    <div class="error">Įveskite galiojantį el. pašto adresą.</div>
+
+    <label>Koks yra kliento telefono numeris?</label>
+    <input name="telefonas" placeholder="+37061321321" required type="tel"/>
+    <div class="error">Įveskite galiojantį telefono numerį.</div>
+
+    <div class="button-row">
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <label>Kokios paskirties yra kliento žemės sklypas?</label>
+    <select name="zemes_paskirtis" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Gyvenamoji">Gyvenamosios paskirties žemė</option>
+      <option value="Rekreacine">Rekreacinės paskirties žemė</option>
+      <option value="Zemes ukio">Žemės ūkio paskirties žemė</option>
+      <option value="Misku ukio">Miškų ūkio paskirties žemė</option>
+      <option value="Pramones">Pramonės ir sandėliavimo paskirties žemė</option>
+      <option value="Kita">Kitos paskirties žemė</option>
+    </select>
+    <div class="error">Pasirinkite paskirtį.</div>
+
+    <label>Koks yra pageidaujamas namo vidaus plotas, įskaitant vidines sienas?</label>
+    <input name="namo_plotas" placeholder="162.93" required type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Kokios energetinės klasės namo pageidauja klientas?</label>
+    <select name="energetine_klase" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="A++">A++</option>
+      <option value="Žemiau A++">Žemiau A++</option>
+      <option value="Vasarnamis">Vasarnamis</option>
+    </select>
+    <div class="error">Pasirinkite klasę.</div>
+
+    <label>Kurį pasiūlymo paketą renkasi klientas?</label>
+    <select name="paketas" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Economy">Economy</option>
+      <option value="Premium">Premium</option>
+      <option value="Premium +">Premium +</option>
+      <option value="Ultra">Ultra</option>
+      <option value="Ultra +">Ultra +</option>
+    </select>
+    <div class="error">Pasirinkite paketą.</div>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step">
     <label>Koks yra pageidaujamas antresolės karkaso plotas?</label>
-<input name="antresoles_karkaso_plotas" placeholder="8.12" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Kokio tipo pamatų pageidauja klientas?</label>
-<select name="pamatai" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Sraigtiniai">Sraigtiniai</option>
-<option value="Betoniniai Poliams">Betoniniai Poliams</option>
-<option value="Betoniniai Rostverkas">Betoniniai Rostverkas</option>
-</select>
-<div class="error">Pasirinkite Pamatus.</div>
-<label>Kiek metrų sudaro kliento namo vidaus sienų ilgis bėginiais metrais?</label>
-<input name="sienu_ilgis" placeholder="8.12" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Koks turėtų būti kliento namo vidaus plotis, m?</label>
-<input name="namo_plotis" placeholder="5.1" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Koks turėtų būti priekinės kliento namo sienos aukštis, m?</label>
-<input name="priekines_sienos_aukstis" placeholder="3.75" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Koks turėtų būti galinės kliento namo sienos aukštis, m?</label>
-<input name="galines_sienos_aukstis" placeholder="2.66" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<div class="button-row">
-<button onclick="prevStep()" type="button">Atgal</button>
-<button onclick="nextStep()" type="button">Toliau</button>
-</div>
-</div>
-<!-- Step 4 -->
-<div class="step">
-<label>Jei namas su daugiau nei vienu šlaitu – koks turėtų būti aukščiausios kliento namo sienos aukštis, m?</label>
-<input name="auksciausia_siena" placeholder="4.12" type="number"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Kokio tipo stogo šlaito pageidauja klientas?</label>
-<select name="Slaito Tipas" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Vienaslaitis">Vienašlaitis</option>
-<option value="Dvislaitis">Dvišlaitis</option>
-<option value="Daugiaslaitis">Daugiaslaitis</option>
-<option value="Lygus">Lygus</option>
-</select>
-<div class="error">Pasirinkite stogo šlaito tipą.</div>
-<label>Įrašykite objekto, kur bus statomas namas, lokaciją (adresą, miestą )</label>
-<input name="lokacija" placeholder="Vilnius, Lietuva" type="text"/>
-<div class="error">Šis laukelis yra privalomas.</div>
-<label>Kokio tipo stogo dangos pageidauja klientas?</label>
-<select name="Stogo Danga" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Skardinė danga - Classic">Skardinė danga - Classic</option>
-<option value="Bituminė stogo danga">Bituminė stogo danga</option>
-<option value="EPDM stogo danga">EPDM stogo danga</option>
-</select>
-<div class="error">Pasirinkite stogo dangos tipą.</div>
-<label>Ar projektas yra kliento (reikalaus daugiau korekcijų), ar mūsų (su minimaliais pakeitimais)?</label>
-<select name="Projekto tipas" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="Mūsų">Mūsų</option>
-<option value="Kliento">Kliento</option>
-<option value="Org Projektas">Org Projektas</option>
-</select>
-<div class="error">Pasirinkite stogo dangos tipą.</div>
-<div class="button-row">
-<button onclick="prevStep()" type="button">Atgal</button>
-<button onclick="nextStep()" type="button">Toliau</button>
-</div>
-</div>
-<!-- Step 5 -->
-<div class="step">
-<style>
-  .checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px 20px;
-    margin-bottom: 30px;
-  }
+    <input name="antresoles_karkaso_plotas" placeholder="8.12" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
 
-  .checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-  }
+    <label>Kokio tipo pamatų pageidauja klientas?</label>
+    <select name="pamatai" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Sraigtiniai">Sraigtiniai</option>
+      <option value="Betoniniai Poliams">Betoniniai Poliams</option>
+      <option value="Betoniniai Rostverkas">Betoniniai Rostverkas</option>
+    </select>
+    <div class="error">Pasirinkite Pamatus.</div>
 
-  .checkbox-section-title {
-    font-weight: 600;
-    font-size: 16px;
-    margin: 20px 0 10px;
-  }
-</style>
+    <label>Kiek metrų sudaro kliento namo vidaus sienų ilgis bėginiais metrais?</label>
+    <input name="sienu_ilgis" placeholder="8.12" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
 
-<!-- Papildomi elementai -->
-<div class="checkbox-section-title">Ar reikalingi papildomi elementai?</div>
-<div class="checkbox-group">
-  <label><input type="checkbox" name="papildomi[]" value="Šild. grindys"> Šild. grindys</label>
-  <label><input type="checkbox" name="papildomi[]" value="Kaminas"> Kaminas</label>
-  <label><input type="checkbox" name="papildomi[]" value="OSB sienoms"> OSB sienoms</label>
-  <label><input type="checkbox" name="papildomi[]" value="Rekup. mini"> Rekup. mini</label>
-   <label><input type="checkbox" name="papildomi[]" value="Rekup. norm."> Rekup. norm.</label>
-    <label><input type="checkbox" name="papildomi[]" value="Kondiš. 1"> 	Kondiš. 1</label>
-    <label><input type="checkbox" name="papildomi[]" value="Kondiš. 2"> Kondiš. 2</label>
-    <label><input type="checkbox" name="papildomi[]" value="Gipsas"> Gipsas</label>
-</div>
+    <label>Koks turėtų būti kliento namo vidaus plotis, m?</label>
+    <input name="namo_plotis" placeholder="5.1" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
 
-<!-- Papildomi darbai -->
-<div class="checkbox-section-title">Pasirinkite papildomus darbus:</div>
-<div class="checkbox-group">
-  <label><input type="checkbox" name="darbai[]" value="MPP (sienų plokštė)"> MPP (sienų plokštė)</label>
-  <label><input type="checkbox" name="darbai[]" value="Fasado dažymas"> Fasado dažymas</label>
-</div>
+    <label>Koks turėtų būti priekinės kliento namo sienos aukštis, m?</label>
+    <input name="priekines_sienos_aukstis" placeholder="3.75" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Koks turėtų būti galinės kliento namo sienos aukštis, m?</label>
+    <input name="galines_sienos_aukstis" placeholder="2.66" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step">
+    <label>Jei namas su daugiau nei vienu šlaitu – koks turėtų būti aukščiausios kliento namo sienos aukštis, m?</label>
+    <input name="auksciausia_siena" placeholder="4.12" type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Kokio tipo stogo šlaito pageidauja klientas?</label>
+    <select name="Slaito Tipas" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Vienaslaitis">Vienašlaitis</option>
+      <option value="Dvislaitis">Dvišlaitis</option>
+      <option value="Daugiaslaitis">Daugiaslaitis</option>
+      <option value="Lygus">Lygus</option>
+    </select>
+    <div class="error">Pasirinkite stogo šlaito tipą.</div>
+
+    <label>Įrašykite objekto, kur bus statomas namas, lokaciją (adresą, miestą )</label>
+    <input name="lokacija" placeholder="Vilnius, Lietuva" type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Kokio tipo stogo dangos pageidauja klientas?</label>
+    <select name="Stogo Danga" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Skardinė danga - Classic">Skardinė danga - Classic</option>
+      <option value="Bituminė stogo danga">Bituminė stogo danga</option>
+      <option value="EPDM stogo danga">EPDM stogo danga</option>
+    </select>
+    <div class="error">Pasirinkite stogo dangos tipą.</div>
+
+    <label>Ar projektas yra kliento (reikalaus daugiau korekcijų), ar mūsų (su minimaliais pakeitimais)?</label>
+    <select name="Projekto tipas" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Mūsų">Mūsų</option>
+      <option value="Kliento">Kliento</option>
+      <option value="Org Projektas">Org Projektas</option>
+    </select>
+    <div class="error">Pasirinkite stogo dangos tipą.</div>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step">
+    <style>
+      .checkbox-group {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 14px 20px; margin-bottom: 30px;
+      }
+      .checkbox-group label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+      .checkbox-section-title { font-weight: 600; font-size: 16px; margin: 20px 0 10px; }
+      @media (max-width: 640px) { .checkbox-group { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+
+    <div class="checkbox-section-title">Ar reikalingi papildomi elementai?</div>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="papildomi[]" value="Šild. grindys"> Šild. grindys</label>
+      <label><input type="checkbox" name="papildomi[]" value="Kaminas"> Kaminas</label>
+      <label><input type="checkbox" name="papildomi[]" value="OSB sienoms"> OSB sienoms</label>
+      <label><input type="checkbox" name="papildomi[]" value="Rekup. mini"> Rekup. mini</label>
+      <label><input type="checkbox" name="papildomi[]" value="Rekup. norm."> Rekup. norm.</label>
+      <label><input type="checkbox" name="papildomi[]" value="Kondiš. 1"> Kondiš. 1</label>
+      <label><input type="checkbox" name="papildomi[]" value="Kondiš. 2"> Kondiš. 2</label>
+      <label><input type="checkbox" name="papildomi[]" value="Gipsas"> Gipsas</label>
+    </div>
+
+    <div class="checkbox-section-title">Pasirinkite papildomus darbus:</div>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="darbai[]" value="MPP (sienų plokštė)"> MPP (sienų plokštė)</label>
+      <label><input type="checkbox" name="darbai[]" value="Fasado dažymas"> Fasado dažymas</label>
+    </div>
+
     <label>Koks langų tipas</label>
-<select name="Langų tipas" required="">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="PVC langai">PVC langai</option>
-<option value="Aliuminiai langai">Aliuminiai langai</option>
-</select>
-<div class="error">Pasirinkite lango tipą.</div>
-<label>Langų pasirinkimas:</label>
-<div id="windowsSection">
-<div class="window-block" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-<select name="window_size[]" required="" style="flex: 1;">
-<option disabled="" selected="" value="">Pasirinkite</option>
-<option value="2000x2250">2000x2250</option>
-<option value="3600x2250">3600x2250</option>
-<option value="1000x2250">1000x2250</option>
-<option value="900x2250 LD">900x2250 LD</option>
-<option value="1800x2250">1800x2250</option>
-</select>
-<input min="0" name="window_qty[]" placeholder="Kiekis" required="" style="flex: 0.6;" type="number"/>
-<button class="remove-window" onclick="removeWindow(this)" style="color: red; font-size: 14px; background: none; border: none; cursor: pointer;" type="button">✕</button>
-</div>
-</div>
-<button onclick="addWindow()" style="margin-top: 10px; background-color: #92B1D0; color: white; padding: 10px 20px; border: none; border-radius: 12px;" type="button">+ Pridėti langą</button>
-<div class="button-row">
-<button onclick="prevStep()" type="button">Atgal</button>
-<button onclick="nextStep()" type="button">Toliau</button>
-</div>
-</div>
-<!-- Submission step -->
-<div class="step">
-<p>Visi duomenys užpildyti. Spauskite „Pateikti“ norėdami išsiųsti formą.</p>
-<div class="button-row">
-<button onclick="prevStep()" type="button">Atgal</button>
-<button class="submit-button" type="submit">Pateikti</button>
-</div>
-</div>
+    <select name="Langų tipas" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="PVC langai">PVC langai</option>
+      <option value="Aliuminiai langai">Aliuminiai langai</option>
+    </select>
+    <div class="error">Pasirinkite lango tipą.</div>
+
+    <label>Langų pasirinkimas:</label>
+    <div id="windowsSection">
+      <div class="window-block" style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+        <select name="window_size[]" required style="flex:1;">
+          <option value="" disabled selected>Pasirinkite</option>
+          <option value="2000x2250">2000x2250</option>
+          <option value="3600x2250">3600x2250</option>
+          <option value="1000x2250">1000x2250</option>
+          <option value="900x2250 LD">900x2250 LD</option>
+          <option value="1800x2250">1800x2250</option>
+        </select>
+        <input type="number" name="window_qty[]" min="0" placeholder="Kiekis" required style="flex:0.6;"/>
+        <button class="remove-window" type="button" onclick="removeWindow(this)" style="color:red;font-size:14px;background:none;border:none;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <button type="button" onclick="addWindow()" style="margin-top:10px;background-color:#92B1D0;color:white;padding:10px 20px;border:none;border-radius:12px;">+ Pridėti langą</button>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Submission step -->
+  <div class="step">
+    <p>Visi duomenys užpildyti. Spauskite „Pateikti“ norėdami išsiųsti formą.</p>
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button class="submit-button" type="submit">Pateikti</button>
+    </div>
+  </div>
+
+  <!-- Floating Comments (INSIDE the form so it submits) -->
+  <div class="comment-fab collapsed" id="commentFab" data-corner="br" aria-live="polite">
+    <button type="button" class="comment-toggle" id="commentToggle" aria-expanded="false" aria-controls="commentText" title="Pastabos">
+      ✎
+    </button>
+    <div class="comment-panel">
+      <div class="comment-title">Pastabos / Komentarai</div>
+      <div class="comment-body">
+        <textarea id="commentText" name="comments" placeholder="Įrašykite pastabas klientui, deryboms ar sekančiam žingsniui…"></textarea>
+      </div>
+      <div class="comment-actions">
+        <button type="button" class="corner-toggle" id="cornerToggle" title="Keisti kampą">Perkelti kampą</button>
+        <small style="opacity:.7;">Išliks viso pildymo metu</small>
+      </div>
+    </div>
+  </div>
+  <!-- /Floating Comments -->
+
 </form>
+
 <script>
-        let currentStep = 0;
-        const steps = document.querySelectorAll('.step');
+  let currentStep = 0;
+  const steps = document.querySelectorAll('.step');
+  const progressBar = document.getElementById("progressBar");
 
-        
-        const progressBar = document.getElementById("progressBar");
+  function updateProgressBar() {
+      const percent = ((currentStep + 1) / steps.length) * 100;
+      progressBar.style.width = percent + "%";
+  }
+  function showStep(index) {
+      steps.forEach((step, i) => step.classList.toggle('active', i === index));
+      updateProgressBar();
+  }
+  updateProgressBar(); // initial
 
-        function updateProgressBar() {
-            const percent = ((currentStep + 1) / steps.length) * 100;
-            progressBar.style.width = percent + "%";
-        }
+  function validateStep(stepIndex) {
+      const step = steps[stepIndex];
+      const inputs = step.querySelectorAll('input, select');
+      let valid = true;
 
-        function showStep(index) {
-            steps.forEach((step, i) => step.classList.toggle('active', i === index));
-            updateProgressBar();
-        }
+      inputs.forEach(input => {
+          if (input.hasAttribute('required')) {
+              if (!input.value.trim()) valid = false;
+          }
+          if (input.type === 'email' && input.value) {
+              const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!re.test(input.value)) valid = false;
+          }
+      });
+      return valid;
+  }
 
-        updateProgressBar(); // initial
+  function nextStep() {
+      if (!validateStep(currentStep)) return;
+      currentStep++;
+      if (currentStep < steps.length) showStep(currentStep);
+  }
+  function prevStep() {
+      if (currentStep > 0) { currentStep--; showStep(currentStep); }
+  }
+</script>
 
-
-        function validateStep(stepIndex) {
-            const step = steps[stepIndex];
-            const inputs = step.querySelectorAll('input, select');
-            let valid = true;
-
-            inputs.forEach(input => {
-                if (input.hasAttribute('required')) {
-                    if (!input.value.trim()) {
-                        valid = false;
-                    } else {
-                    }
-                }
-                if (input.type === 'email' && input.value) {
-                    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!re.test(input.value)) {
-                        valid = false;
-                    }
-                }
-            });
-
-            return valid;
-        }
-
-        
-        function nextStep() {
-            if (!validateStep(currentStep)) {
-                return;
-            }
-    
-    updateProgressBar();
-            if (validateStep(currentStep)) {
-                currentStep++;
-                if (currentStep < steps.length) showStep(currentStep);
-            }
-        }
-
-        function prevStep() {
-    updateProgressBar();
-            if (currentStep > 0) {
-                currentStep--;
-                showStep(currentStep);
-            }
-        }
-    </script>
 <script>
   function addWindow() {
     const container = document.getElementById("windowsSection");
@@ -414,48 +435,96 @@
     newBlock.querySelectorAll("input, select").forEach(el => el.value = "");
     container.appendChild(newBlock);
   }
-
   function removeWindow(button) {
     const container = document.getElementById("windowsSection");
-    if (container.children.length > 1) {
-      button.parentElement.remove();
-    }
+    if (container.children.length > 1) button.parentElement.remove();
   }
 </script>
 
+<!-- Floating Comments script -->
+<script>
+(function(){
+  const fab = document.getElementById('commentFab');
+  const toggle = document.getElementById('commentToggle');
+  const textarea = document.getElementById('commentText');
+  const cornerBtn = document.getElementById('cornerToggle');
+  const STORAGE_KEY = 'namiele_comments_v1';
+  const STATE_KEY = 'namiele_comments_collapsed';
+  const CORNER_KEY = 'namiele_comments_corner';
 
+  // Restore textarea, collapsed state, and corner
+  const saved = sessionStorage.getItem(STORAGE_KEY);
+  if (saved) textarea.value = saved;
+
+  const savedCollapsed = sessionStorage.getItem(STATE_KEY);
+  if (savedCollapsed === 'false') expand(); else collapse(); // default collapsed
+
+  const savedCorner = sessionStorage.getItem(CORNER_KEY);
+  if (savedCorner) fab.dataset.corner = savedCorner;
+
+  // Persist content during typing
+  textarea.addEventListener('input', () => {
+    sessionStorage.setItem(STORAGE_KEY, textarea.value);
+  });
+
+  // Toggle expand/collapse
+  toggle.addEventListener('click', () => {
+    if (fab.classList.contains('collapsed')) { expand(); }
+    else { collapse(); }
+  });
+
+  function expand(){
+    fab.classList.remove('collapsed');
+    toggle.setAttribute('aria-expanded','true');
+    document.body.classList.add('has-floating-comments-expanded');
+  }
+  function collapse(){
+    fab.classList.add('collapsed');
+    toggle.setAttribute('aria-expanded','false');
+    document.body.classList.remove('has-floating-comments-expanded');
+  }
+
+  // Cycle corner: br -> bl -> tr -> tl -> br
+  cornerBtn.addEventListener('click', () => {
+    const order = ['br','bl','tr','tl'];
+    const cur = fab.dataset.corner || 'br';
+    const next = order[(order.indexOf(cur)+1)%order.length];
+    fab.dataset.corner = next;
+    sessionStorage.setItem(CORNER_KEY, next);
+  });
+
+  // If the fixed logo exists in bottom-right, keep the box above it by default
+  // (CSS already offsets bottom by +100px for bottom corners; nothing else needed)
+
+  // On successful submit (handled below), we’ll clear storage too.
+})();
+</script>
 
 <a href="https://www.namiele.lt/" target="_blank" aria-label="Namiele pagrindinis puslapis">
-  <img src="https://cdn.brandfetch.io/idGYJwW34f/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B" 
-       alt="Namiele logotipas" 
+  <img src="https://cdn.brandfetch.io/idGYJwW34f/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B"
+       alt="Namiele logotipas"
        style="position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; max-width: 20vw; max-height: 20vw; opacity: 1; z-index: 1000; border-radius: 12px;">
 </a>
+
 <script>
 document.querySelector("form").addEventListener("submit", async function (e) {
   e.preventDefault();
-// Validate all steps before sending
-for (let i = 0; i < steps.length; i++) {
-  if (!validateStep(i)) {
-    currentStep = i;
-    showStep(i);
-    return; // stop submitting; user fixes the invalid step
+  // Validate all steps before sending
+  for (let i = 0; i < steps.length; i++) {
+    if (!validateStep(i)) {
+      currentStep = i;
+      showStep(i);
+      return;
+    }
   }
-}
   const formData = new FormData(this);
   const json = {};
   const temp = {};
 
-  // helper: make safe keys (handles LT letters + punctuation)
   function makeKey(text) {
-    const map = { 'ą':'a','č':'c','ę':'e','ė':'e','į':'i','š':'s','ų':'u','ū':'u','ž':'z',
-                  'Ą':'A','Č':'C','Ę':'E','Ė':'E','Į':'I','Š':'S','Ų':'U','Ū':'U','Ž':'Z' };
+    const map = { 'ą':'a','č':'c','ę':'e','ė':'e','į':'i','š':'s','ų':'u','ū':'u','ž':'z','Ą':'A','Č':'C','Ę':'E','Ė':'E','Į':'I','Š':'S','Ų':'U','Ū':'U','Ž':'Z' };
     const ascii = text.split('').map(ch => map[ch] ?? ch).join('');
-    return ascii
-      .replace(/\./g,'')           // remove dots
-      .replace(/\s+/g,'_')         // spaces -> _
-      .replace(/[^A-Za-z0-9_]/g,'_') // other punctuation -> _
-      .replace(/_+/g,'_')          // collapse __
-      .replace(/^_|_$/g,'');       // trim _
+    return ascii.replace(/\./g,'').replace(/\s+/g,'_').replace(/[^A-Za-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
   }
 
   formData.forEach((value, key) => {
@@ -471,27 +540,19 @@ for (let i = 0; i < steps.length; i++) {
     }
   });
 
-  // ----- WINDOWS -----
   if (temp.window_sizes && temp.window_qtys) {
-    json.windows = temp.window_sizes.map((size, i) => ({
-      size,
-      qty: temp.window_qtys[i] || ""
-    }));
+    json.windows = temp.window_sizes.map((size, i) => ({ size, qty: temp.window_qtys[i] || "" }));
   }
 
-  // get all declared sizes from the <select> (future-proof)
-  const sizeOptions = Array.from(
-    document.querySelectorAll('select[name="window_size[]"] option')
-  ).map(o => o.value).filter(v => v && v !== "Pasirinkite");
+  const sizeOptions = Array.from(document.querySelectorAll('select[name="window_size[]"] option'))
+    .map(o => o.value).filter(v => v && v !== "Pasirinkite");
 
-  // init zeros
   const windowFlat = {};
   sizeOptions.forEach(s => {
     const key = "windows_" + s.replace(/\W+/g, "_");
     windowFlat[key] = 0;
   });
 
-  // sum selections
   (json.windows ?? []).forEach(w => {
     if (!w.size) return;
     const key = "windows_" + w.size.replace(/\W+/g, "_");
@@ -501,45 +562,25 @@ for (let i = 0; i < steps.length; i++) {
 
   Object.assign(json, windowFlat);
 
-  // ----- PAPILDOMI ELEMENTAI (checkboxes -> 0/1 columns) -----
-  const allPapildomiValues = Array.from(
-    document.querySelectorAll('input[type="checkbox"][name="papildomi[]"]')
-  ).map(i => i.value);
+  const allPapildomiValues = Array.from(document.querySelectorAll('input[type="checkbox"][name="papildomi[]"]')).map(i => i.value);
+  allPapildomiValues.forEach(v => { json["papildomi_" + makeKey(v)] = 0; });
+  (json.papildomi ?? []).forEach(v => { const k = "papildomi_" + makeKey(v); json[k] = (json[k] ?? 0) + 1; });
 
-  allPapildomiValues.forEach(v => {
-    json["papildomi_" + makeKey(v)] = 0;
-  });
+  const allDarbaiValues = Array.from(document.querySelectorAll('input[type="checkbox"][name="darbai[]"]')).map(i => i.value);
+  allDarbaiValues.forEach(v => { json["darbai_" + makeKey(v)] = 0; });
+  (json.darbai ?? []).forEach(v => { const k = "darbai_" + makeKey(v); json[k] = (json[k] ?? 0) + 1; });
 
-  (json.papildomi ?? []).forEach(v => {
-    const k = "papildomi_" + makeKey(v);
-    json[k] = (json[k] ?? 0) + 1; // 1 if checked (sums if ever duplicated)
-  });
-
-  // ----- PAPILDOMI DARBAI (checkboxes -> 0/1 columns) -----
-  const allDarbaiValues = Array.from(
-    document.querySelectorAll('input[type="checkbox"][name="darbai[]"]')
-  ).map(i => i.value);
-
-  allDarbaiValues.forEach(v => {
-    json["darbai_" + makeKey(v)] = 0;
-  });
-
-  (json.darbai ?? []).forEach(v => {
-    const k = "darbai_" + makeKey(v);
-    json[k] = (json[k] ?? 0) + 1;
-  });
-
-  // ---- POST ----
   try {
     const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(json)
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(json)
     });
 
     if (response.ok) {
       alert("Form submitted successfully!");
       this.reset();
+      // Clear persisted comments
+      sessionStorage.removeItem('namiele_comments_v1');
+      sessionStorage.removeItem('namiele_comments_collapsed');
     } else {
       alert("Submission failed. Try again.");
     }
@@ -548,7 +589,5 @@ for (let i = 0; i < steps.length; i++) {
   }
 });
 </script>
-
-
 </body>
 </html>
