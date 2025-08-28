@@ -626,26 +626,40 @@ document.querySelector("form").addEventListener("submit", async function (e) {
 (async function(){
   const qs = new URLSearchParams(location.search);
   const sessionId = qs.get("session");
-  if (!sessionId) return; // nothing to load
+  if (!sessionId) return;
 
   try {
     const resp = await fetch(`https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`);
     if (!resp.ok) return;
-    const data = await resp.json();
+    const rows = await resp.json();
 
-    // hydrate form with values from Sheets
+    if (!rows.length) return; // nothing found
+    const row = rows[0];
+
+    // If your sheet stores full JSON as string in column "json" or "payload"
+    let data = {};
+    if (row.json) {
+      try { data = JSON.parse(row.json); } catch(e) {}
+    } else {
+      data = row;
+    }
+
     const form = document.querySelector("form");
     for (const [key, value] of Object.entries(data)) {
       const els = form.querySelectorAll(`[name="${key}"]`);
       els.forEach(el => {
         if (el.type === "checkbox" || el.type === "radio") {
-          el.checked = Array.isArray(value) ? value.includes(el.value) : el.value === value;
+          if (Array.isArray(value)) {
+            el.checked = value.includes(el.value);
+          } else {
+            el.checked = el.value === value;
+          }
         } else {
           el.value = value;
         }
       });
     }
-    // Comments box if it's separate
+
     const commentsEl = document.querySelector("#commentText");
     if (commentsEl && data.comments) commentsEl.value = data.comments;
   } catch(e) {
