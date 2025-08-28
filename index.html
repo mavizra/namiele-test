@@ -599,14 +599,40 @@ document.querySelector("form").addEventListener("submit", async function (e) {
                  || new URL(location.href).searchParams.get("session") 
                  || "unknown";
 
-  const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Form-Session": sessionId   // <-- NEW header
-    },
-    body: JSON.stringify(json)       // <-- body unchanged
-  });
+  // detect reopened
+const reopened = !!window.__SESSION_REOPENED__;
+
+// optional diff to see what changed
+function diffKeys(a = {}, b = {}) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  const changed = [];
+  for (const k of keys) {
+    const va = JSON.stringify(a[k] ?? null);
+    const vb = JSON.stringify(b[k] ?? null);
+    if (va !== vb) changed.push(k);
+  }
+  return changed;
+}
+
+let changedKeys = [];
+if (reopened && window.__SESSION_INITIAL_DATA__) {
+  changedKeys = diffKeys(window.__SESSION_INITIAL_DATA__, json);
+}
+
+const changedSummary = changedKeys.slice(0, 12).join(',');
+const changedCount = String(changedKeys.length);
+
+const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Form-Session": sessionId,
+    "X-Form-Reopened": reopened ? "1" : "0",
+    "X-Form-Changed-Count": changedCount,
+    "X-Form-Changed-Keys": changedSummary
+  },
+  body: JSON.stringify(json)
+});
 
   if (response.ok) {
     alert("Form submitted successfully!");
@@ -631,44 +657,82 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   try {
     const resp = await fetch(`https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`);
     if (!resp.ok) return;
-    const row = await resp.json();
 
-    // If your n8n Respond node returns an array, adjust:
+    const row = await resp.json();
     const record = Array.isArray(row) ? row[0] : row;
     if (!record) return;
 
-    // Parse JSON Payload
+    // Parse the big JSON string and take .body
     let data = {};
     if (record["JSON Payload"]) {
-      try {
-        const parsed = JSON.parse(record["JSON Payload"]);
-        data = parsed.body || {};
-      } catch (e) {
-        console.error("Failed to parse JSON Payload", e);
-      }
+      try { data = (JSON.parse(record["JSON Payload"]).body) || {}; }
+      catch(e){ console.error("Failed to parse JSON Payload", e); }
+    } else {
+      data = record; // fallback
     }
 
-    // Hydrate form
     const form = document.querySelector("form");
+
+    // --- 1) Hydrate simple inputs/selects by exact name ---
     for (const [key, value] of Object.entries(data)) {
-      const els = form.querySelectorAll(`[name="${key}"]`);
+      // skip arrays/complex here; handled below
+      if (Array.isArray(value) || typeof value === "object") continue;
+      const els = form.querySelectorAll(`[name="${CSS.escape(key)}"]`);
       els.forEach(el => {
-        if (el.type === "checkbox" || el.type === "radio") {
-          if (Array.isArray(value)) {
-            el.checked = value.includes(el.value);
-          } else {
-            el.checked = el.value === value;
-          }
+        if (el.type === "radio") {
+          el.checked = el.value === String(value);
+        } else if (el.type === "checkbox") {
+          // checkboxes with non-array single values are uncommon; skip
         } else {
           el.value = value;
         }
       });
     }
 
-    // Comments box
-    const commentsEl = document.querySelector("#commentText");
-    if (commentsEl && data.comments) commentsEl.value = data.comments;
+    // --- 2) Hydrate checkbox arrays: papildomi[] and darbai[] ---
+    function hydrateCheckboxArray(fieldNameWithBrackets, values){
+      if (!Array.isArray(values)) return;
+      form.querySelectorAll(`input[name="${fieldNameWithBrackets}"]`).forEach(cb=>{
+        cb.checked = values.includes(cb.value);
+      });
+    }
+    hydrateCheckboxArray("papildomi[]", data.papildomi);
+    hydrateCheckboxArray("darbai[]", data.darbai);
 
+    // --- 3) Hydrate special select with diacritics (safety) ---
+    const langSelect = form.querySelector(`select[name="Langų tipas"]`);
+    if (langSelect && typeof data["Langų tipas"] === "string") {
+      langSelect.value = data["Langų tipas"];
+    }
+
+    // --- 4) Hydrate windows repeater ---
+    if (Array.isArray(data.windows)) {
+      const container = document.getElementById("windowsSection");
+      if (container && container.firstElementChild) {
+        const template = container.firstElementChild.cloneNode(true);
+        container.innerHTML = ""; // rebuild from server data
+
+        data.windows.forEach(w => {
+          const block = template.cloneNode(true);
+          const sizeSel = block.querySelector(`select[name="window_size[]"]`);
+          const qtyInp  = block.querySelector(`input[name="window_qty[]"]`);
+          if (sizeSel) sizeSel.value = w.size || "";
+          if (qtyInp)  qtyInp.value  = w.qty  || "";
+          container.appendChild(block);
+        });
+
+        // If server had zero windows (unlikely), keep one empty block
+        if (data.windows.length === 0) container.appendChild(template);
+      }
+    }
+
+    // --- 5) Comments in floating box ---
+    const commentsEl = document.querySelector("#commentText");
+    if (commentsEl && typeof data.comments === "string") {
+      commentsEl.value = data.comments;
+    }
+window.__SESSION_REOPENED__ = true;
+window.__SESSION_INITIAL_DATA__ = data;
   } catch(e) {
     console.error("Session fetch failed", e);
   }
