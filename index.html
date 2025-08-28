@@ -631,19 +631,24 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   try {
     const resp = await fetch(`https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`);
     if (!resp.ok) return;
-    const rows = await resp.json();
+    const row = await resp.json();
 
-    if (!rows.length) return; // nothing found
-    const row = rows[0];
+    // If your n8n Respond node returns an array, adjust:
+    const record = Array.isArray(row) ? row[0] : row;
+    if (!record) return;
 
-    // If your sheet stores full JSON as string in column "json" or "payload"
+    // Parse JSON Payload
     let data = {};
-    if (row.json) {
-      try { data = JSON.parse(row.json); } catch(e) {}
-    } else {
-      data = row;
+    if (record["JSON Payload"]) {
+      try {
+        const parsed = JSON.parse(record["JSON Payload"]);
+        data = parsed.body || {};
+      } catch (e) {
+        console.error("Failed to parse JSON Payload", e);
+      }
     }
 
+    // Hydrate form
     const form = document.querySelector("form");
     for (const [key, value] of Object.entries(data)) {
       const els = form.querySelectorAll(`[name="${key}"]`);
@@ -660,8 +665,10 @@ document.querySelector("form").addEventListener("submit", async function (e) {
       });
     }
 
+    // Comments box
     const commentsEl = document.querySelector("#commentText");
     if (commentsEl && data.comments) commentsEl.value = data.comments;
+
   } catch(e) {
     console.error("Session fetch failed", e);
   }
