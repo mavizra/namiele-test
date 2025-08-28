@@ -655,51 +655,67 @@ const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiel
   if (!sessionId) return;
 
   try {
-    const resp = await fetch(`https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`);
+    const resp = await fetch(
+      `https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`
+    );
     if (!resp.ok) return;
 
     const row = await resp.json();
     const record = Array.isArray(row) ? row[0] : row;
     if (!record) return;
 
-    // Parse the big JSON string and take .body
+    // Parse JSON Payload (n8n saved form data)
     let data = {};
     if (record["JSON Payload"]) {
-      try { data = (JSON.parse(record["JSON Payload"]).body) || {}; }
-      catch(e){ console.error("Failed to parse JSON Payload", e); }
+      try { 
+        const parsed = JSON.parse(record["JSON Payload"]);
+        data = parsed.body || {}; 
+      } catch(e){ 
+        console.error("Failed to parse JSON Payload", e); 
+      }
     } else {
       data = record; // fallback
     }
 
     const form = document.querySelector("form");
 
+    // --- helper for accent/dot-insensitive matching ---
+    function normalizeLabel(str="") {
+      return str
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // remove accents
+        .replace(/\./g,"")   // remove dots
+        .replace(/\s+/g," ") // collapse whitespace
+        .trim()
+        .toLowerCase();
+    }
+
     // --- 1) Hydrate simple inputs/selects by exact name ---
     for (const [key, value] of Object.entries(data)) {
-      // skip arrays/complex here; handled below
-      if (Array.isArray(value) || typeof value === "object") continue;
+      if (Array.isArray(value) || typeof value === "object") continue; // skip arrays here
       const els = form.querySelectorAll(`[name="${CSS.escape(key)}"]`);
       els.forEach(el => {
         if (el.type === "radio") {
           el.checked = el.value === String(value);
         } else if (el.type === "checkbox") {
-          // checkboxes with non-array single values are uncommon; skip
+          // handled separately
         } else {
           el.value = value;
         }
       });
     }
 
-    // --- 2) Hydrate checkbox arrays: papildomi[] and darbai[] ---
+    // --- 2) Hydrate checkbox arrays with normalization ---
     function hydrateCheckboxArray(fieldNameWithBrackets, values){
       if (!Array.isArray(values)) return;
       form.querySelectorAll(`input[name="${fieldNameWithBrackets}"]`).forEach(cb=>{
-        cb.checked = values.includes(cb.value);
+        const cbNorm = normalizeLabel(cb.value);
+        cb.checked = values.some(v => normalizeLabel(v) === cbNorm);
       });
     }
     hydrateCheckboxArray("papildomi[]", data.papildomi);
     hydrateCheckboxArray("darbai[]", data.darbai);
 
-    // --- 3) Hydrate special select with diacritics (safety) ---
+    // --- 3) Hydrate special select (Langų tipas) ---
     const langSelect = form.querySelector(`select[name="Langų tipas"]`);
     if (langSelect && typeof data["Langų tipas"] === "string") {
       langSelect.value = data["Langų tipas"];
@@ -721,7 +737,6 @@ const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiel
           container.appendChild(block);
         });
 
-        // If server had zero windows (unlikely), keep one empty block
         if (data.windows.length === 0) container.appendChild(template);
       }
     }
@@ -731,13 +746,17 @@ const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiel
     if (commentsEl && typeof data.comments === "string") {
       commentsEl.value = data.comments;
     }
-window.__SESSION_REOPENED__ = true;
-window.__SESSION_INITIAL_DATA__ = data;
+
+    // --- mark reopened + snapshot for diffing on submit ---
+    window.__SESSION_REOPENED__ = true;
+    window.__SESSION_INITIAL_DATA__ = data;
+
   } catch(e) {
     console.error("Session fetch failed", e);
   }
 })();
 </script>
+
 
 </body>
 </html>
