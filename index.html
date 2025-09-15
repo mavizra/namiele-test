@@ -3,177 +3,208 @@
 <head>
 <meta charset="utf-8"/>
 <title>Užsakymo forma | Namiele</title>
-<style>
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #F7F6F4;
-            color: #0E0A07;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
-        header { text-align: center; padding: 40px 20px 20px; }
-        header img { max-height: 80px; }
-
-        h1 {
-            font-weight: 300; text-align: center; font-size: 28px;
-            margin-top: 10px; margin-bottom: 0;
-        }
-
-        form {
-            max-width: 720px; margin: 20px auto; padding: 40px 30px;
-            background-color: white; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-        }
-
-        label { font-weight: 600; display: block; margin: 18px 0 6px; }
-
-        input, select, textarea {
-            width: 100%; padding: 12px 14px; border: 1px solid #ccc;
-            border-radius: 10px; font-size: 15px; background-color: #fff;
-            transition: border-color 0.2s ease-in-out;
-        }
-        input:focus, select:focus, textarea:focus { border-color: #92B1D0; outline: none; }
-
-        select option[disabled][selected] { color: #999; }
-
-        .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.4s ease-in; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity:1; transform:none;} }
-
-        .button-row { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 30px; }
-
-        button {
-            padding: 14px 24px; font-size: 16px; background-color: #92B1D0; color: #fff;
-            border: none; border-radius: 10px; cursor: pointer; transition: background 0.3s ease;
-        }
-        button:hover { background-color: #7c9dbf; }
-        .submit-button { margin-left: auto; }
-
-        .error { color: red; font-size: 13px; margin-top: 6px; display: none; }
-
-        .progress-container {
-            height: 6px; background-color: #ddd; border-radius: 3px; overflow: hidden; margin-bottom: 30px;
-        }
-        .progress-bar { height: 100%; width: 0%; background-color: #92B1D0; transition: width 0.3s ease-in-out; }
-
-        /* ---------- Floating Comments ---------- */
-        :root {
-          --comment-corner: br;       /* tl | tr | bl | br */
-          --comment-gap: 20px;        /* gap from edges */
-          --comment-width: 320px;
-          --comment-height: 180px;
-          --comment-z: 1100;          /* above logo (which is 1000) */
-        }
-
-        /* body padding when expanded so fields aren’t hidden behind the floating card */
-        body.has-floating-comments-expanded {
-          padding-bottom: 160px; /* keeps last inputs/tap targets clear */
-        }
-
-        .comment-fab {
-          position: fixed;
-          z-index: var(--comment-z);
-          display: flex; align-items: center; gap: 10px;
-          max-width: min(92vw, var(--comment-width));
-          box-shadow: 0 10px 30px rgba(0,0,0,.12);
-          border-radius: 14px;
-          background: #fff;
-          border: 1px solid #e9e7e4;
-          overflow: hidden;
-          /* default corner: bottom-right */
-          bottom: calc(var(--comment-gap) + 100px); /* sits above fixed logo (80px + gap) */
-          right: var(--comment-gap);
-        }
-
-        /* Corner switching via data attribute (set on .comment-fab) */
-        .comment-fab[data-corner="br"] { bottom: calc(var(--comment-gap) + 100px); right: var(--comment-gap); }
-        .comment-fab[data-corner="bl"] { bottom: calc(var(--comment-gap) + 100px); left: var(--comment-gap); }
-        .comment-fab[data-corner="tr"] { top: var(--comment-gap); right: var(--comment-gap); bottom: auto; }
-        .comment-fab[data-corner="tl"] { top: var(--comment-gap); left: var(--comment-gap); bottom: auto; }
-
-        .comment-fab.collapsed {
-          width: auto; height: auto; padding: 0;
-        }
-
-        .comment-fab.collapsed .comment-body,
-        .comment-fab.collapsed .comment-title,
-        .comment-fab.collapsed .comment-actions .corner-toggle {
-          display: none;
-        }
-
-        .comment-title {
-          font-size: 13px; font-weight: 600; color: #333; padding: 10px 12px 0;
-        }
-
-        .comment-body { padding: 8px 12px 12px; }
-        .comment-body textarea {
-          resize: vertical; min-height: 110px; height: var(--comment-height);
-          width: 100%;
-        }
-
-        .comment-actions {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 8px 12px 12px; gap: 8px;
-        }
-
-        .comment-toggle {
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 42px; height: 42px; border-radius: 50%;
-          background: #92B1D0; color: #fff; border: none; cursor: pointer;
-          font-size: 18px; line-height: 1;
-        }
-        .comment-toggle:hover { background: #7c9dbf; }
-
-        .corner-toggle {
-          font-size: 12px; background: #f3f2ef; color:#333;
-          border: 1px solid #e3e1dd; border-radius: 10px; padding: 6px 10px; cursor: pointer;
-        }
-
-        /* Mobile tweaks */
-        @media (max-width: 520px) {
-          :root { --comment-width: 92vw; }
-          .comment-body textarea { min-height: 90px; }
-          /* On very small screens, allow the box to sit at the very bottom */
-          .comment-fab[data-corner^="b"] { bottom: var(--comment-gap); }
-          body.has-floating-comments-expanded { padding-bottom: 200px; }
-        }
-</style>
-<style>
-  * { box-sizing: border-box; }
-  body { ... }
-  h1 { ... }
-  form { ... }
-  /* your other CSS */
-</style>
-
 <script>
-(function(){
-  const qs = new URLSearchParams(location.search);
-  let sessionId = qs.get("session");
-  if(!sessionId){
-    sessionId = (crypto.randomUUID && crypto.randomUUID()) 
-             || ("sess_" + Math.random().toString(36).slice(2));
-    const url = new URL(location.href);
-    url.searchParams.set("session", sessionId);
-    history.replaceState(null, "", url.toString());
+(function() {
+  function getQueryParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
   }
+
+  // Jei URL jau turi ?session=..., pasiimam
+  let sessionId = getQueryParam("session");
+  if (!sessionId) {
+    // Jei neturi – sugeneruojam naują unikalų
+    sessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+    // įrašom į URL
+    const url = new URL(window.location);
+    url.searchParams.set("session", sessionId);
+    window.history.replaceState({}, "", url);
+  }
+
+  // pasiekiamas globaliai
   window.__FORM_SESSION_ID__ = sessionId;
 })();
 </script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: #F7F6F4;
+    color: #0E0A07;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header { text-align: center; padding: 40px 20px 20px; }
+h1 {
+    font-weight: 300; text-align: center; font-size: 28px;
+    margin-top: 10px; margin-bottom: 0;
+}
+
+form {
+    max-width: 720px; margin: 20px auto; padding: 40px 30px;
+    background-color: white; border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    position: relative;
+}
+
+label { font-weight: 600; display: block; margin: 18px 0 6px; }
+
+input, select, textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid #ccc;
+    border-radius: 10px; font-size: 15px; background-color: #fff;
+    transition: border-color 0.2s ease-in-out;
+}
+input:focus, select:focus, textarea:focus { border-color: #92B1D0; outline: none; }
+
+.step { display: none; }
+.step.active { display: block; animation: fadeIn 0.4s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity:1; transform:none;} }
+
+.button-row { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 30px; }
+
+button {
+    padding: 14px 24px; font-size: 16px; background-color: #92B1D0; color: #fff;
+    border: none; border-radius: 10px; cursor: pointer; transition: background 0.3s ease;
+}
+button:hover { background-color: #7c9dbf; }
+.submit-button { margin-left: auto; }
+
+.progress-container {
+    height: 6px; background-color: #ddd; border-radius: 3px; overflow: hidden; margin-bottom: 30px;
+}
+.progress-bar { height: 100%; width: 0%; background-color: #92B1D0; transition: width 0.3s ease-in-out; }
+
+/* Floating comments */
+.comment-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e9e7e4;
+  padding: 12px;
+  width: 280px;
+  transition: all 0.3s ease;
+}
+.comment-fab.collapsed { 
+  width: auto; height: auto; padding: 0; background: transparent; border: none; box-shadow: none;
+}
+.comment-fab.collapsed .comment-panel { display: none; }
+.comment-fab .comment-toggle {
+  background: #92B1D0; color: #fff; border: none; border-radius: 50%;
+  width: 40px; height: 40px; cursor: pointer; font-size: 18px;
+}
+.comment-fab .comment-panel { margin-top: 10px; }
+.comment-fab textarea { width: 100%; min-height: 100px; }
+
+.comment-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  background: #92B1D0;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.form-select-btn {
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  background-color: #92B1D0;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  text-align: center;
+}
+.form-select-btn:hover {
+  background-color: #7c9dbf;
+}
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+  display: none; /* critical */
+}
+
+/* Section heading tidy spacing */
+.checkbox-section-title {
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+
+/* Responsive multi-column layout for checkboxes */
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px 18px; /* row x column spacing */
+  align-items: start;
+}
+
+/* Make each item neat and clickable */
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Keep the box aligned nicely */
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* Small screens can collapse to single column if desired */
+@media (max-width: 480px) {
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+</style>
 </head>
 <body>
 <header>
-<h1>Kliento užsakymo forma</h1>
+  <h1>Kliento užsakymo forma</h1>
 </header>
 
-<form id="clientForm" novalidate>
-  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<!-- Form selection -->
+<div id="formSelector" style="max-width:720px;margin:20px auto;padding:30px;background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.06);text-align:center;">
+  <p><strong>Pasirinkite formos tipą:</strong></p>
+  <div id="formPick" style="display:flex;flex-direction:column;gap:15px;align-items:stretch;margin-top:20px;">
+    <button type="button" class="form-select-btn" data-type="karkasiniai">Karkasinių Namelių Forma</button>
+    <button type="button" class="form-select-btn" data-type="moduliniai">Modulinių Namelių Forma</button>
+    <button type="button" class="form-select-btn" data-type="sld">SLD Forma</button>
+  </div>
+</div>
+
+<!-- Forms container -->
+<div id="formsContainer">
+
+  <!-- Karkasiniai -->
+  <form id="form-karkasiniai" class="clientForm" novalidate style="display:none;">
+      
+    <h2 style="text-align:center;margin-bottom:20px;">Karkasinių Namelių Forma</h2>
+    <div class="progress-container"><div class="progress-bar"></div></div>
 
   <!-- Step 1 -->
   <div class="step active">
@@ -188,11 +219,11 @@
     <label>Koks yra kliento telefono numeris?</label>
     <input name="telefonas" placeholder="+37061321321" required type="tel"/>
     <div class="error">Įveskite galiojantį telefono numerį.</div>
-
-    <div class="button-row">
-      <button type="button" onclick="nextStep()">Toliau</button>
-    </div>
-  </div>
+<div class="button-row">
+    <button type="button" class="back-to-selector" onclick="backToSelector()">← Grįžti į formos pasirinkimą</button>
+  <button type="button" onclick="nextStep()">Toliau</button>
+</div>
+</div>
 
   <!-- Step 2 -->
   <div class="step">
@@ -321,16 +352,8 @@
 
   <!-- Step 5 -->
   <div class="step">
-    <style>
-      .checkbox-group {
-        display: grid; grid-template-columns: repeat(3, 1fr);
-        gap: 14px 20px; margin-bottom: 30px;
-      }
-      .checkbox-group label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
-      .checkbox-section-title { font-weight: 600; font-size: 16px; margin: 20px 0 10px; }
-      @media (max-width: 640px) { .checkbox-group { grid-template-columns: repeat(2, 1fr); } }
-    </style>
-
+ 
+ 
     <div class="checkbox-section-title">Ar reikalingi papildomi elementai?</div>
     <div class="checkbox-group">
       <label><input type="checkbox" name="papildomi[]" value="Šild. grindys"> Šild. grindys</label>
@@ -341,6 +364,7 @@
       <label><input type="checkbox" name="papildomi[]" value="Kondiš. 1"> Kondiš. 1</label>
       <label><input type="checkbox" name="papildomi[]" value="Kondiš. 2"> Kondiš. 2</label>
       <label><input type="checkbox" name="papildomi[]" value="Gipsas"> Gipsas</label>
+      <label><input type="checkbox" name="papildomi[]" value="Elektra"> Elektra</label>
     </div>
 
     <div class="checkbox-section-title">Pasirinkite papildomus darbus:</div>
@@ -354,6 +378,7 @@
       <option value="" disabled selected>Pasirinkite</option>
       <option value="PVC langai">PVC langai</option>
       <option value="Aliuminiai langai">Aliuminiai langai</option>
+      <option value="Mediniai langai">Mediniai langai</option>
     </select>
     <div class="error">Pasirinkite lango tipą.</div>
 
@@ -367,6 +392,7 @@
           <option value="1000x2250">1000x2250</option>
           <option value="900x2250 LD">900x2250 LD</option>
           <option value="1800x2250">1800x2250</option>
+          <option value="660x1180 Stoglangis">660x1180 Stoglangis</option>
         </select>
         <input type="number" name="window_qty[]" min="0" placeholder="Kiekis" required style="flex:0.6;"/>
         <button class="remove-window" type="button" onclick="removeWindow(this)" style="color:red;font-size:14px;background:none;border:none;cursor:pointer;">✕</button>
@@ -380,383 +406,453 @@
     </div>
   </div>
 
-  <!-- Submission step -->
-  <div class="step">
-    <p>Visi duomenys užpildyti. Spauskite „Pateikti“ norėdami išsiųsti formą.</p>
-    <div class="button-row">
-      <button type="button" onclick="prevStep()">Atgal</button>
-      <button class="submit-button" type="submit">Pateikti</button>
-    </div>
-  </div>
 
-  <!-- Floating Comments (INSIDE the form so it submits) -->
-  <div class="comment-fab collapsed" id="commentFab" data-corner="br" aria-live="polite">
-    <button type="button" class="comment-toggle" id="commentToggle" aria-expanded="false" aria-controls="commentText" title="Pastabos">
-      ✎
-    </button>
-    <div class="comment-panel">
-      <div class="comment-title">Pastabos / Komentarai</div>
-      <div class="comment-body">
-        <textarea id="commentText" name="comments" placeholder="Įrašykite pastabas klientui, deryboms ar sekančiam žingsniui…"></textarea>
-      </div>
-      <div class="comment-actions">
-        <button type="button" class="corner-toggle" id="cornerToggle" title="Keisti kampą">Perkelti kampą</button>
-        <small style="opacity:.7;">Išliks viso pildymo metu</small>
+    <!-- Submission step -->
+    <div class="step">
+      <p>Visi duomenys užpildyti.</p>
+      <div class="button-row">
+        <button type="button" onclick="prevStep()">Atgal</button>
+        <button class="submit-button" type="submit">Pateikti</button>
       </div>
     </div>
-  </div>
-  <!-- /Floating Comments -->
 
-</form>
 
-<script>
-  let currentStep = 0;
-  const steps = document.querySelectorAll('.step');
-  const progressBar = document.getElementById("progressBar");
+<input type="hidden" name="form_type" value="">
+    <!-- Floating comments inside form -->
+    <div class="comment-fab collapsed">
+        
+      <button type="button" class="comment-toggle" aria-expanded="false">✎</button>
+      <div class="comment-panel">
+        <label>Pastabos / Komentarai</label>
+        <textarea class="comment-text" name="comments" placeholder="Įrašykite pastabas..."></textarea>
+      </div>
+    </div>
+  </form>
 
-  function updateProgressBar() {
-      const percent = ((currentStep + 1) / steps.length) * 100;
-      progressBar.style.width = percent + "%";
-  }
-  function showStep(index) {
-      steps.forEach((step, i) => step.classList.toggle('active', i === index));
-      updateProgressBar();
-  }
-  updateProgressBar(); // initial
+  <!-- Moduliniai -->
+  <form id="form-moduliniai" class="clientForm" novalidate style="display:none;">
+    <h2 style="text-align:center;margin-bottom:20px;">Modulinių Namelių Forma</h2>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+    <!-- Same steps -->
+    <div class="step active">
+      <label>Kliento vardas</label>
+      <input name="vardas" required type="text"/>
+      <label>El. paštas</label>
+      <input name="email" required type="email"/>
+      <label>Telefonas</label>
+      <input name="telefonas" required type="tel"/>
+<div class="button-row">
+    <button type="button" class="back-to-selector" onclick="backToSelector()">← Grįžti į formos pasirinkimą</button>
+  <button type="button" onclick="nextStep()">Toliau</button>
+</div>
+    </div>
+    <div class="step">
+      <label>Žemės paskirtis</label>
+      <select name="zemes_paskirtis" required>
+        <option value="" disabled selected>Pasirinkite</option>
+        <option value="Gyvenamoji">Gyvenamoji</option>
+        <option value="Rekreacine">Rekreacinė</option>
+      </select>
+      <div class="button-row"><button type="button" onclick="prevStep()">Atgal</button><button type="button" onclick="nextStep()">Toliau</button></div>
+    </div>
+    <div class="step">
+      <p>Visi duomenys užpildyti.</p>
+      <div class="button-row">
+        <button type="button" onclick="prevStep()">Atgal</button>
+        <button class="submit-button" type="submit">Pateikti</button>
+      </div>
+    </div>
+<input type="hidden" name="form_type" value="">
+    <div class="comment-fab collapsed">
+      <button type="button" class="comment-toggle" aria-expanded="false">✎</button>
+      <div class="comment-panel">
+        <label>Pastabos / Komentarai</label>
+        <textarea class="comment-text" name="comments" placeholder="Įrašykite pastabas..."></textarea>
+      </div>
+    </div>
 
-  function validateStep(stepIndex) {
-      const step = steps[stepIndex];
-      const inputs = step.querySelectorAll('input, select');
-      let valid = true;
+  </form>
 
-      inputs.forEach(input => {
-          if (input.hasAttribute('required')) {
-              if (!input.value.trim()) valid = false;
-          }
-          if (input.type === 'email' && input.value) {
-              const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!re.test(input.value)) valid = false;
-          }
-      });
-      return valid;
-  }
+  <!-- SLD -->
+  <form id="form-sld" class="clientForm" novalidate style="display:none;">
+    <h2 style="text-align:center;margin-bottom:20px;">SLD Forma</h2>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+    <!-- Same steps -->
+    <div class="step active">
+      <label>Kliento Vardas ir Pavardė</label>
+      <input name="vardas" placeholder="Vardenis Pavardenis" required type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+      
+      <label>El. paštas</label>
+      <input name="email" placeholder="VardenisPavardenis@gmail.com" required type="email"/>
+      <div class="error">Šis laukelis yra privalomas.</div>
+      
+      <label>Telefono Nr.</label>
+      <input name="telefonas" placeholder="+37061234567" required type="tel"/>
+            <div class="error">Šis laukelis yra privalomas.</div>
+            
+    <label>Asmens Kodas</label>
+      <input name="asmKodas" placeholder="37061234567" required type="number"/>
+          <div class="error">Šis laukelis yra privalomas.</div>
+          
+      <label>Adresas</label>
+      <input name="adresas" placeholder="Naujoji g.5-9, Rūdiškės, Trakų raj." required type="text"/>
+      <div class="error">Šis laukelis yra privalomas.</div>
+ <div class="button-row">
+    <button type="button" class="back-to-selector" onclick="backToSelector()">← Grįžti į formos pasirinkimą</button>
+  <button type="button" onclick="nextStep()">Toliau</button>
+</div>
+    </div>
+    
+    <div class="step">
+              <label>Projekto Pavadinimas</label>
+      <input name="ProjektoPavadinimas" placeholder="Namiele Smėlio debesis 140m2 karkasinio namo projektas" required type="text"/>
+    <label>Per Kiek laiko bus projektas paruoštas</label>
+      <input name="ProjektoPeriodas" placeholder="6" required type="number"/>
+     <div class="error">Šis laukelis yra privalomas.</div>
+      <label>Projekto Lygis</label>
+      <select name="p_lygis" required>
+        <option value="" disabled selected>Pasirinkite</option>
+        <option value="4500">NAUJAS NAMO PROJEKTAS (nuo 50M2) 4500 EUR</option>
+        <option value="4100">NAUJAS NAMO PROJEKTAS (iki 50M2) 4100Eur</option>
+        <option value="3800">JAU TURIMAS NAMIELE PROJEKTAS (REIKALINGOS KOREKCIJOS) 3800 Eur</option>
+        <option value="3600">JAU TURIMAS PROJEKTAS (BE KOREKCIJŲ) 3600 Eur</option>
+        <option value="3000">MODULINIO LEIDIMAS (NUO 50M2) 3000Eur</option>
+        <option value="2500">MODULINIO LEIDIMAS (IKI 50M2) 2500Eur</option>
+      </select>
+      <div class="error">Šis laukelis yra privalomas.</div>
+      <div class="button-row"><button type="button" onclick="prevStep()">Atgal</button><button type="button" onclick="nextStep()">Toliau</button></div>
+    </div>
+    <div class="step">
+      <p>Visi duomenys užpildyti.</p>
+      <div class="button-row">
+        <button type="button" onclick="prevStep()">Atgal</button>
+        <button class="submit-button" type="submit">Pateikti</button>
+      </div>
+    </div>
+<input type="hidden" name="form_type" value="">
+    <div class="comment-fab collapsed">
+      <button type="button" class="comment-toggle" aria-expanded="false">✎</button>
+      <div class="comment-panel">
+        <label>Pastabos / Komentarai</label>
+        <textarea class="comment-text" name="comments" placeholder="Įrašykite pastabas..."></textarea>
+      </div>
+    </div>
 
-  function nextStep() {
-      if (!validateStep(currentStep)) return;
-      currentStep++;
-      if (currentStep < steps.length) showStep(currentStep);
-  }
-  function prevStep() {
-      if (currentStep > 0) { currentStep--; showStep(currentStep); }
-  }
-</script>
+  </form>
 
-<script>
-  function addWindow() {
-    const container = document.getElementById("windowsSection");
-    const newBlock = container.firstElementChild.cloneNode(true);
-    newBlock.querySelectorAll("input, select").forEach(el => el.value = "");
-    container.appendChild(newBlock);
-  }
-  function removeWindow(button) {
-    const container = document.getElementById("windowsSection");
-    if (container.children.length > 1) button.parentElement.remove();
-  }
-</script>
+</div>
 
-<!-- Floating Comments script -->
-<script>
-(function(){
-  const fab = document.getElementById('commentFab');
-  const toggle = document.getElementById('commentToggle');
-  const textarea = document.getElementById('commentText');
-  const cornerBtn = document.getElementById('cornerToggle');
-  const STORAGE_KEY = 'namiele_comments_v1';
-  const STATE_KEY = 'namiele_comments_collapsed';
-  const CORNER_KEY = 'namiele_comments_corner';
-
-  // Restore textarea, collapsed state, and corner
-  const saved = sessionStorage.getItem(STORAGE_KEY);
-  if (saved) textarea.value = saved;
-
-  const savedCollapsed = sessionStorage.getItem(STATE_KEY);
-  if (savedCollapsed === 'false') expand(); else collapse(); // default collapsed
-
-  const savedCorner = sessionStorage.getItem(CORNER_KEY);
-  if (savedCorner) fab.dataset.corner = savedCorner;
-
-  // Persist content during typing
-  textarea.addEventListener('input', () => {
-    sessionStorage.setItem(STORAGE_KEY, textarea.value);
-  });
-
-  // Toggle expand/collapse
-  toggle.addEventListener('click', () => {
-    if (fab.classList.contains('collapsed')) { expand(); }
-    else { collapse(); }
-  });
-
-  function expand(){
-    fab.classList.remove('collapsed');
-    toggle.setAttribute('aria-expanded','true');
-    document.body.classList.add('has-floating-comments-expanded');
-  }
-  function collapse(){
-    fab.classList.add('collapsed');
-    toggle.setAttribute('aria-expanded','false');
-    document.body.classList.remove('has-floating-comments-expanded');
-  }
-
-  // Cycle corner: br -> bl -> tr -> tl -> br
-  cornerBtn.addEventListener('click', () => {
-    const order = ['br','bl','tr','tl'];
-    const cur = fab.dataset.corner || 'br';
-    const next = order[(order.indexOf(cur)+1)%order.length];
-    fab.dataset.corner = next;
-    sessionStorage.setItem(CORNER_KEY, next);
-  });
-
-  // If the fixed logo exists in bottom-right, keep the box above it by default
-  // (CSS already offsets bottom by +100px for bottom corners; nothing else needed)
-
-  // On successful submit (handled below), we’ll clear storage too.
-})();
-</script>
 
 <a href="https://www.namiele.lt/" target="_blank" aria-label="Namiele pagrindinis puslapis">
   <img src="https://cdn.brandfetch.io/idGYJwW34f/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B"
        alt="Namiele logotipas"
-       style="position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; max-width: 20vw; max-height: 20vw; opacity: 1; z-index: 1000; border-radius: 12px;">
+       style="position: fixed; top: 20px; right: 20px; width: 80px; height: 80px; max-width: 20vw; max-height: 20vw; opacity: 1; z-index: 1000; border-radius: 12px;">
 </a>
 
+
 <script>
-document.querySelector("form").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  // Validate all steps before sending
-  for (let i = 0; i < steps.length; i++) {
-    if (!validateStep(i)) {
-      currentStep = i;
-      showStep(i);
-      return;
-    }
-  }
-  const formData = new FormData(this);
-  const json = {};
-  const temp = {};
+let currentForm = null;
+let currentStep = 0;
+let steps = [];
+let progressBar = null;
 
-  function makeKey(text) {
-    const map = { 'ą':'a','č':'c','ę':'e','ė':'e','į':'i','š':'s','ų':'u','ū':'u','ž':'z','Ą':'A','Č':'C','Ę':'E','Ė':'E','Į':'I','Š':'S','Ų':'U','Ū':'U','Ž':'Z' };
-    const ascii = text.split('').map(ch => map[ch] ?? ch).join('');
-    return ascii.replace(/\./g,'').replace(/\s+/g,'_').replace(/[^A-Za-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-  }
+window.startSelectedForm = function(type) {
+  document.getElementById("formSelector").style.display = "none";
+  document.querySelectorAll("#formsContainer form").forEach(f => f.style.display = "none");
 
-  formData.forEach((value, key) => {
-    if (key === "window_size[]") {
-      (temp.window_sizes ??= []).push(value);
-    } else if (key === "window_qty[]") {
-      (temp.window_qtys ??= []).push(value);
-    } else if (key.endsWith("[]")) {
-      const cleanKey = key.replace("[]", "");
-      (json[cleanKey] ??= []).push(value);
+  currentForm = document.getElementById("form-" + type);
+  if (!currentForm) { console.warn("Form not found:", type); return; }
+  currentForm.style.display = "block";
+
+  const hiddenInput = currentForm.querySelector('input[name="form_type"]');
+  if (hiddenInput) hiddenInput.value = type;
+
+  steps = currentForm.querySelectorAll(".step");
+  progressBar = currentForm.querySelector(".progress-bar");
+  currentStep = 0;
+  showStep(0);
+
+  if (typeof restoreSessionData === "function") restoreSessionData(currentForm);
+};
+
+
+function updateProgressBar() {
+  if (!progressBar) return;
+  const percent = ((currentStep + 1) / steps.length) * 100;
+  progressBar.style.width = percent + "%";
+}
+function showStep(index) {
+  steps.forEach((step, i) => step.classList.toggle("active", i === index));
+  updateProgressBar();
+}
+function validateStep(stepIndex) {
+  const step = steps[stepIndex];
+  const inputs = step.querySelectorAll("input, select");
+  let valid = true;
+
+  inputs.forEach(input => {
+    let error = input.nextElementSibling;
+    if (error && !error.classList.contains("error")) error = null;
+
+    if (!input.checkValidity()) {
+      if (error) error.style.display = "block";
+      valid = false;
     } else {
-      json[key] = value;
+      if (error) error.style.display = "none";
     }
   });
 
-  if (temp.window_sizes && temp.window_qtys) {
-    json.windows = temp.window_sizes.map((size, i) => ({ size, qty: temp.window_qtys[i] || "" }));
-  }
-
-  const sizeOptions = Array.from(document.querySelectorAll('select[name="window_size[]"] option'))
-    .map(o => o.value).filter(v => v && v !== "Pasirinkite");
-
-  const windowFlat = {};
-  sizeOptions.forEach(s => {
-    const key = "windows_" + s.replace(/\W+/g, "_");
-    windowFlat[key] = 0;
-  });
-
-  (json.windows ?? []).forEach(w => {
-    if (!w.size) return;
-    const key = "windows_" + w.size.replace(/\W+/g, "_");
-    const n = Number(w.qty || 0);
-    windowFlat[key] = (windowFlat[key] ?? 0) + (isNaN(n) ? 0 : n);
-  });
-
-  Object.assign(json, windowFlat);
-
-  const allPapildomiValues = Array.from(document.querySelectorAll('input[type="checkbox"][name="papildomi[]"]')).map(i => i.value);
-  allPapildomiValues.forEach(v => { json["papildomi_" + makeKey(v)] = 0; });
-  (json.papildomi ?? []).forEach(v => { const k = "papildomi_" + makeKey(v); json[k] = (json[k] ?? 0) + 1; });
-
-  const allDarbaiValues = Array.from(document.querySelectorAll('input[type="checkbox"][name="darbai[]"]')).map(i => i.value);
-  allDarbaiValues.forEach(v => { json["darbai_" + makeKey(v)] = 0; });
-  (json.darbai ?? []).forEach(v => { const k = "darbai_" + makeKey(v); json[k] = (json[k] ?? 0) + 1; });
-
- try {
-  // Grab session id from global (set by the autosave snippet) or from URL
-  const sessionId = window.__FORM_SESSION_ID__ 
-                 || new URL(location.href).searchParams.get("session") 
-                 || "unknown";
-
-  // detect reopened
-const reopened = !!window.__SESSION_REOPENED__;
-
-// optional diff to see what changed
-function diffKeys(a = {}, b = {}) {
-  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-  const changed = [];
-  for (const k of keys) {
-    const va = JSON.stringify(a[k] ?? null);
-    const vb = JSON.stringify(b[k] ?? null);
-    if (va !== vb) changed.push(k);
-  }
-  return changed;
+  return valid;
+}
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  currentStep++;
+  if (currentStep < steps.length) showStep(currentStep);
+}
+function prevStep() {
+  if (currentStep > 0) { currentStep--; showStep(currentStep); }
 }
 
-let changedKeys = [];
-if (reopened && window.__SESSION_INITIAL_DATA__) {
-  changedKeys = diffKeys(window.__SESSION_INITIAL_DATA__, json);
-}
+document.querySelectorAll("#formsContainer form").forEach(form => {
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-const changedSummary = changedKeys.slice(0, 12).join(',');
-const changedCount = String(changedKeys.length);
+    // validate steps
+    for (let i = 0; i < steps.length; i++) {
+      if (!validateStep(i)) { currentStep = i; showStep(i); return; }
+    }
 
-const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "X-Form-Session": sessionId,
-    "X-Form-Reopened": reopened ? "1" : "0",
-    "X-Form-Changed-Count": changedCount,
-    "X-Form-Changed-Keys": changedSummary
-  },
-  body: JSON.stringify(json)
+    const formData = new FormData(this);
+    const json = {};
+    formData.forEach((value, key) => { json[key] = value; });
+
+    try {
+      const sessionId = window.__FORM_SESSION_ID__;
+      const response = await fetch("https://marvizra.app.n8n.cloud/webhook/form-namiele", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Form-Session": sessionId,
+          "X-Form-Reopened": "0",
+          "X-Form-Changed-Count": "0",
+          "X-Form-Changed-Keys": ""
+        },
+        body: JSON.stringify(json)
+      });
+
+      if (response.ok) {
+        alert("Form submitted successfully!");
+        this.reset();
+      } else {
+        alert("Submission failed.");
+      }
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
 });
 
-  if (response.ok) {
-    alert("Form submitted successfully!");
-    this.reset();
-    // Clear persisted comments
-    sessionStorage.removeItem('namiele_comments_v1');
-    sessionStorage.removeItem('namiele_comments_collapsed');
-  } else {
-    alert("Submission failed. Try again.");
-  }
-} catch (error) {
-  alert("Error: " + error.message);
-}
-});
-</script>
-<script>
-(async function(){
-  const qs = new URLSearchParams(location.search);
-  const sessionId = qs.get("session");
-  if (!sessionId) return;
 
+// Comment toggle logic
+document.querySelectorAll('.comment-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const fab = btn.closest('.comment-fab');
+    fab.classList.toggle('collapsed');
+    btn.setAttribute('aria-expanded', fab.classList.contains('collapsed') ? 'false' : 'true');
+  });
+});
+function backToSelector() {
+  // paslepiam visas formas
+  document.querySelectorAll("#formsContainer form").forEach(f => f.style.display = "none");
+  // parodom selector
+  document.getElementById("formSelector").style.display = "block";
+  // resetinam currentForm ir step'us
+  currentForm = null;
+  steps = [];
+  currentStep = 0;
+  progressBar = null;
+}
+async function restoreSessionData(targetForm) {
+  const sessionId = window.__FORM_SESSION_ID__;
+  if (!sessionId || !targetForm) return;
+
+  // 1) fetch server data (best effort)
+  let server = {};
   try {
-    const resp = await fetch(
-      `https://marvizra.app.n8n.cloud/webhook/get-session?session=${encodeURIComponent(sessionId)}`
-    );
-    if (!resp.ok) return;
+    const res = await fetch("https://marvizra.app.n8n.cloud/webhook/get-session?session=" + encodeURIComponent(sessionId));
+    if (res.ok) server = await res.json();
+  } catch {}
 
-    const row = await resp.json();
-    const record = Array.isArray(row) ? row[0] : row;
-    if (!record) return;
+  // 2) merge with local stored values (local wins)
+  const local = (typeof loadLocalSession === "function") ? loadLocalSession(sessionId) : {};
+  const data = Object.assign({}, server, local);
 
-    // Parse JSON Payload (n8n saved form data)
-    let data = {};
-    if (record["JSON Payload"]) {
-      try { 
-        const parsed = JSON.parse(record["JSON Payload"]);
-        data = parsed.body || {}; 
-      } catch(e){ 
-        console.error("Failed to parse JSON Payload", e); 
-      }
-    } else {
-      data = record; // fallback
-    }
+  // 3) fill direct fields by name
+  for (const [key, value] of Object.entries(data)) {
+    if (key === "form_type") continue;
 
-    const form = document.querySelector("form");
-
-    // --- helper for accent/dot-insensitive matching ---
-    function normalizeLabel(str="") {
-      return str
-        .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // remove accents
-        .replace(/\./g,"")   // remove dots
-        .replace(/\s+/g," ") // collapse whitespace
-        .trim()
-        .toLowerCase();
-    }
-
-    // --- 1) Hydrate simple inputs/selects by exact name ---
-    for (const [key, value] of Object.entries(data)) {
-      if (Array.isArray(value) || typeof value === "object") continue; // skip arrays here
-      const els = form.querySelectorAll(`[name="${CSS.escape(key)}"]`);
-      els.forEach(el => {
-        if (el.type === "radio") {
-          el.checked = el.value === String(value);
-        } else if (el.type === "checkbox") {
-          // handled separately
+    // direct name
+    const fields = targetForm.querySelectorAll(`[name="${key}"]`);
+    if (fields.length) {
+      fields.forEach(field => {
+        if (field.type === "radio") {
+          field.checked = String(field.value) === String(value);
+        } else if (field.type === "checkbox") {
+          if (Array.isArray(value)) {
+            field.checked = value.map(String).includes(String(field.value));
+          } else {
+            field.checked = !!value;
+          }
         } else {
-          el.value = value;
+          field.value = value ?? "";
         }
+        const err = field.nextElementSibling;
+        if (err && err.classList.contains("error") && field.checkValidity()) err.style.display = "none";
+      });
+      continue;
+    }
+
+    // array style name[] fields
+    const arrayFields = targetForm.querySelectorAll(`[name="${key}[]"]`);
+    if (arrayFields.length && Array.isArray(value)) {
+      arrayFields.forEach((field, i) => {
+        if (field.type === "checkbox") {
+          field.checked = value.map(String).includes(String(field.value));
+        } else if (field.type === "radio") {
+          field.checked = String(field.value) === String(value[i]);
+        } else {
+          field.value = value[i] !== undefined ? value[i] : "";
+        }
+        const err = field.nextElementSibling;
+        if (err && err.classList.contains("error") && field.checkValidity()) err.style.display = "none";
       });
     }
-
-    // --- 2) Hydrate checkbox arrays with normalization ---
-    function hydrateCheckboxArray(fieldNameWithBrackets, values){
-      if (!Array.isArray(values)) return;
-      form.querySelectorAll(`input[name="${fieldNameWithBrackets}"]`).forEach(cb=>{
-        const cbNorm = normalizeLabel(cb.value);
-        cb.checked = values.some(v => normalizeLabel(v) === cbNorm);
-      });
-    }
-    hydrateCheckboxArray("papildomi[]", data.papildomi);
-    hydrateCheckboxArray("darbai[]", data.darbai);
-
-    // --- 3) Hydrate special select (Langų tipas) ---
-    const langSelect = form.querySelector(`select[name="Langų tipas"]`);
-    if (langSelect && typeof data["Langų tipas"] === "string") {
-      langSelect.value = data["Langų tipas"];
-    }
-
-    // --- 4) Hydrate windows repeater ---
-    if (Array.isArray(data.windows)) {
-      const container = document.getElementById("windowsSection");
-      if (container && container.firstElementChild) {
-        const template = container.firstElementChild.cloneNode(true);
-        container.innerHTML = ""; // rebuild from server data
-
-        data.windows.forEach(w => {
-          const block = template.cloneNode(true);
-          const sizeSel = block.querySelector(`select[name="window_size[]"]`);
-          const qtyInp  = block.querySelector(`input[name="window_qty[]"]`);
-          if (sizeSel) sizeSel.value = w.size || "";
-          if (qtyInp)  qtyInp.value  = w.qty  || "";
-          container.appendChild(block);
-        });
-
-        if (data.windows.length === 0) container.appendChild(template);
-      }
-    }
-
-    // --- 5) Comments in floating box ---
-    const commentsEl = document.querySelector("#commentText");
-    if (commentsEl && typeof data.comments === "string") {
-      commentsEl.value = data.comments;
-    }
-
-    // --- mark reopened + snapshot for diffing on submit ---
-    window.__SESSION_REOPENED__ = true;
-    window.__SESSION_INITIAL_DATA__ = data;
-
-  } catch(e) {
-    console.error("Session fetch failed", e);
   }
-})();
-</script>
 
+  // 4) windows repeater special case (robust)
+  const container =
+    targetForm.querySelector('.windowsSection') ||
+    targetForm.querySelector('#windowsSection');
+
+  if (container && container.firstElementChild) {
+    // accept either window_size / window_qty OR window_size[] / window_qty[]
+    const sizes =
+      Array.isArray(data.window_size)      ? data.window_size :
+      Array.isArray(data["window_size[]"]) ? data["window_size[]"] : [];
+    const qtys  =
+      Array.isArray(data.window_qty)       ? data.window_qty :
+      Array.isArray(data["window_qty[]"])  ? data["window_qty[]"]  : [];
+
+    const blocksNeeded = Math.max(sizes.length, qtys.length);
+
+    // expand to needed count
+    while (blocksNeeded > 0 && container.children.length < blocksNeeded) {
+      const clone = container.firstElementChild.cloneNode(true);
+      clone.querySelectorAll('select,input,textarea').forEach(el => { el.value = ''; el.checked = false; });
+      container.appendChild(clone);
+    }
+
+    // shrink extras but keep at least one block
+    while (container.children.length > Math.max(1, blocksNeeded)) {
+      container.lastElementChild.remove();
+    }
+
+    // fill values per block
+    const blocks = Array.from(container.children);
+    blocks.forEach((block, i) => {
+      const sizeField = block.querySelector('select[name="window_size[]"]');
+      const qtyField  = block.querySelector('input[name="window_qty[]"]');
+      if (sizes[i] !== undefined && sizeField) sizeField.value = String(sizes[i]);
+      if (qtys[i]  !== undefined && qtyField)  qtyField.value  = String(qtys[i]);
+    });
+  }
+}
+
+
+function addWindow() {
+  if (!currentForm) return;
+  const container = currentForm.querySelector('#windowsSection') || document.getElementById('windowsSection');
+  if (!container || !container.firstElementChild) return;
+  const clone = container.firstElementChild.cloneNode(true);
+  clone.querySelectorAll('select,input').forEach(el => el.value = '');
+  container.appendChild(clone);
+}
+function removeWindow(btn) {
+  const block = btn.closest('.window-block');
+  const container = block && block.parentElement;
+  if (container && container.children.length > 1) block.remove();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#formPick .form-select-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.type;
+      if (typeof window.startSelectedForm === 'function') {
+        window.startSelectedForm(type);
+      }
+    });
+  });
+});
+document.addEventListener('input', (e) => {
+  if (!currentForm) return;
+  const el = e.target;
+  if (!currentForm.contains(el)) return;
+  const err = el.nextElementSibling;
+  if (err && err.classList.contains('error') && el.checkValidity()) {
+    err.style.display = 'none';
+  }
+});
+
+// fields we want to mirror across forms and persist locally
+const SHARED_FIELDS = [
+  "vardas",
+  "email",
+  "telefonas",
+  "adresas",
+  "asmKodas" // exists in SLD only; harmless if missing in others
+];
+
+// local storage helpers keyed by session
+function loadLocalSession(sessionId) {
+  try { return JSON.parse(localStorage.getItem("formSession:" + sessionId)) || {}; }
+  catch { return {}; }
+}
+function saveLocalSession(sessionId, data) {
+  try { localStorage.setItem("formSession:" + sessionId, JSON.stringify(data)); } catch {}
+}
+
+// copy a value to the same-named field in ALL forms, and persist locally
+function setSharedValue(name, value) {
+  // mirror in DOM
+  document.querySelectorAll('#formsContainer form [name="' + name + '"]').forEach(el => {
+    if (el === document.activeElement) return; // do not fight the active input
+    if (el.type === "checkbox" || el.type === "radio") return; // skip complex cases here
+    el.value = value;
+    const err = el.nextElementSibling;
+    if (err && err.classList.contains("error") && el.checkValidity()) err.style.display = "none";
+  });
+
+  // persist locally by session
+  const sid = window.__FORM_SESSION_ID__;
+  if (!sid) return;
+  const stash = loadLocalSession(sid);
+  stash[name] = value;
+  saveLocalSession(sid, stash);
+}
+
+// when user types in a shared field, mirror to other forms and save locally
+document.addEventListener("input", (e) => {
+  if (!currentForm) return;
+  const el = e.target;
+  if (!currentForm.contains(el)) return;
+  const name = el.getAttribute("name");
+  if (!name || !SHARED_FIELDS.includes(name)) return;
+  setSharedValue(name, el.value);
+});
+
+
+
+</script>
 
 </body>
 </html>
