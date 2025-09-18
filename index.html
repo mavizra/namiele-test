@@ -338,11 +338,11 @@ button:hover { background-color: #7c9dbf; }
     <label>Ar projektas yra kliento (reikalaus daugiau korekcijų), ar mūsų (su minimaliais pakeitimais)?</label>
     <select name="Projekto tipas" required>
       <option value="" disabled selected>Pasirinkite</option>
-      <option value="Mūsų">Mūsų</option>
-      <option value="Kliento">Kliento</option>
+      <option value="Mini korekcijos">Mūsų</option>
+      <option value="Individualus Pastatas">Kliento</option>
       <option value="Org Projektas">Org Projektas</option>
     </select>
-    <div class="error">Pasirinkite stogo dangos tipą.</div>
+    <div class="error">Pasirinkite projekto tipą.</div>
 
     <div class="button-row">
       <button type="button" onclick="prevStep()">Atgal</button>
@@ -372,6 +372,15 @@ button:hover { background-color: #7c9dbf; }
       <label><input type="checkbox" name="darbai[]" value="MPP (sienų plokštė)"> MPP (sienų plokštė)</label>
       <label><input type="checkbox" name="darbai[]" value="Fasado dažymas"> Fasado dažymas</label>
     </div>
+
+    <label>Koks grindų šildymas?</label>
+    <select name="Šildymo Tipas" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Vamzdukai">Vamzdukai</option>
+      <option value="Nieko">Nieko</option>
+      <option value="Kazkas">Kazkas</option>
+    </select>
+    <div class="error">Pasirinkite šildymo tipą.</div>
 
     <label>Koks langų tipas</label>
     <select name="Langų tipas" required>
@@ -652,27 +661,54 @@ document.querySelectorAll("#formsContainer form").forEach(form => {
     if (tmp.window_size.length) json.window_size = tmp.window_size;
     if (tmp.window_qty.length)  json.window_qty  = tmp.window_qty;
 
-    // compose windows as [{size, qty}]
-    json.windows = tmp.window_size.map((size, i) => ({
-      size,
-      qty: tmp.window_qty[i] || ""
-    }));
+// Rebuild windows from DOM to capture the selected option's GROUP
+const winBlocks = this.querySelectorAll('#windowsSection .window-block, .windowsSection .window-block');
 
-    // flatten window counts as in the old file
-    const sizeOptions = Array.from(this.querySelectorAll('select[name="window_size[]"] option'))
-      .map(o => o.value).filter(v => v && v !== "Pasirinkite");
+json.windows = Array.from(winBlocks).map(block => {
+  const sel = block.querySelector('select[name="window_size[]"]');
+  const qtyEl = block.querySelector('input[name="window_qty[]"]');
+  const size = sel ? sel.value : "";
+  const qty  = qtyEl ? qtyEl.value : "";
 
-    const windowFlat = {};
-    sizeOptions.forEach(s => { windowFlat["windows_" + s.replace(/\W+/g, "_")] = 0; });
+  // read the optgroup label -> prefix
+  let prefix = "X";
+  if (sel && sel.selectedOptions && sel.selectedOptions[0]) {
+    const og = sel.selectedOptions[0].parentElement;
+    if (og && og.tagName && og.tagName.toLowerCase() === 'optgroup') {
+      prefix = GROUP_PREFIX[og.label] || "X";
+    } else {
+      // fallback if no optgroup (shouldn't happen after we rebuild selects)
+      prefix = SIZE_PREFIX[size] || "X";
+    }
+  }
+  return { size, qty, prefix };
+});
 
-    (json.windows ?? []).forEach(w => {
-      if (!w.size) return;
-      const k = "windows_" + w.size.replace(/\W+/g, "_");
-      const n = Number(w.qty || 0);
-      windowFlat[k] = (windowFlat[k] ?? 0) + (isNaN(n) ? 0 : n);
-    });
+// Keep raw arrays for compatibility (same as before)
+json.window_size = json.windows.map(w => w.size);
+json.window_qty  = json.windows.map(w => w.qty);
 
-    Object.assign(json, windowFlat);
+// flatten window counts by actual group prefix + size
+const windowFlat = {};
+const norm = s => String(s).replace(/\W+/g, "_");
+
+// initialize all catalog counters per group
+Object.entries(WINDOW_OPTIONS).forEach(([group, sizes]) => {
+  const pref = GROUP_PREFIX[group] || "X";
+  sizes.forEach(s => { windowFlat["windows_" + pref + "_" + norm(s)] = 0; });
+});
+
+// tally selected windows
+(json.windows ?? []).forEach(w => {
+  if (!w.size) return;
+  const key = "windows_" + w.prefix + "_" + norm(w.size);
+  const n = Number((w.qty ?? "").toString().replace(",", "."));
+  windowFlat[key] = (windowFlat[key] ?? 0) + (isNaN(n) ? 0 : n);
+});
+
+Object.assign(json, windowFlat);
+
+
 
     // checkbox helpers like the old file (0/1 flags for each possible value)
     const allPap = Array.from(this.querySelectorAll('input[type="checkbox"][name="papildomi[]"]')).map(i => i.value);
@@ -826,21 +862,109 @@ async function restoreSessionData(targetForm) {
     });
   }
 }
+// Window size catalog with subsections
+const WINDOW_OPTIONS = {
+  "PVC/Mediniai": [
+    "900x2400","900x2400 LD","2200x2400","2000x2400","1000x2400","2700x2400","4000x2400","6000x2400",
+    "900x2250 LD","4000x2250","6000x2250","1800x2250","2000x2250","3600x2250","700x2250","500x710",
+    "500x1000","1000x1000"
+  ],
+  "Aliuminiai": [
+    "700x2700","900x2700","1000x2700","2000x2700","3000x2700","1500x2700","2500x2700","5000x2700"
+    // the source list had several duplicate "700x2700" entries; duplicates removed intentionally
+  ],
+  "HS Slide": [
+    "3500x2250","3500x2400","4000x2250","4000x2400"
+  ],
+  "Lauko durys": [
+    "1000x2250","1000x2400","1000x2700"
+  ],
+  "Stoglangis": [
+    "66x118"
+  ]
+};
+
+// Map each size -> group prefix to disambiguate counts
+// P = PVC/Mediniai, A = Aliuminiai, S = HS Slide / Lauko durys / Stoglangis
+// Group prefixes we want in counts
+const GROUP_PREFIX = {
+  "PVC/Mediniai": "P",
+  "Aliuminiai": "A",
+  "HS Slide": "S",
+  "Lauko durys": "S",
+  "Stoglangis": "S"
+};
+
+// Map each size -> last-seen group prefix (still useful as a fallback)
+const SIZE_PREFIX = {};
+(function buildSizePrefix() {
+  Object.entries(WINDOW_OPTIONS).forEach(([group, list]) => {
+    const prefix = GROUP_PREFIX[group] || "X";
+    list.forEach(size => { SIZE_PREFIX[size] = prefix; });
+  });
+})();
+
+
+// Build the <select> with optgroups
+function buildWindowSizeSelect(selectEl) {
+  if (!selectEl) return;
+  const current = selectEl.value; // try to preserve selected value
+
+  // clear
+  while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+
+  // placeholder
+  const ph = document.createElement("option");
+  ph.value = "";
+  ph.disabled = true;
+  ph.selected = true;
+  ph.textContent = "Pasirinkite";
+  selectEl.appendChild(ph);
+
+  // groups
+  Object.entries(WINDOW_OPTIONS).forEach(([label, list]) => {
+    const grp = document.createElement("optgroup");
+    grp.label = label;
+    list.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      grp.appendChild(opt);
+    });
+    selectEl.appendChild(grp);
+  });
+
+  // re-select if possible
+  if (current && [...selectEl.options].some(o => o.value === current)) {
+    selectEl.value = current;
+    ph.selected = false;
+  }
+}
 
 
 function addWindow() {
   if (!currentForm) return;
-  const container = currentForm.querySelector('#windowsSection') || document.getElementById('windowsSection');
+  const container = currentForm.querySelector('.windowsSection') || currentForm.querySelector('#windowsSection');
   if (!container || !container.firstElementChild) return;
+
   const clone = container.firstElementChild.cloneNode(true);
-  clone.querySelectorAll('select,input').forEach(el => el.value = '');
+  clone.querySelectorAll('select,input,textarea').forEach(el => { el.value = ''; el.checked = false; });
+
+  // IMPORTANT: rebuild the grouped dropdown inside the clone
+  const sel = clone.querySelector('select[name="window_size[]"]');
+  if (sel) buildWindowSizeSelect(sel);
+
   container.appendChild(clone);
 }
+
 function removeWindow(btn) {
   const block = btn.closest('.window-block');
   const container = block && block.parentElement;
   if (container && container.children.length > 1) block.remove();
 }
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('select[name="window_size[]"]').forEach(buildWindowSizeSelect);
+});
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#formPick .form-select-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -906,6 +1030,32 @@ document.addEventListener("input", (e) => {
   const name = el.getAttribute("name");
   if (!name || !SHARED_FIELDS.includes(name)) return;
   setSharedValue(name, el.value);
+});
+// allow decimals in all number inputs (phone is type="tel", so untouched)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[type="number"]').forEach(el => {
+    el.setAttribute('step', 'any');        // enables 4.3 etc
+    el.setAttribute('inputmode', 'decimal'); // mobile shows decimal keypad
+  });
+});
+// live: turn 4,3 into 4.3 so checkValidity() passes
+document.addEventListener('input', (e) => {
+  if (!currentForm) return;
+  const el = e.target;
+  if (!currentForm.contains(el)) return;
+  if (el.matches('input[type="number"]')) {
+    const v = el.value.replace(',', '.');
+    if (v !== el.value) el.value = v;
+  }
+});
+
+// extra safety: normalize again right before building FormData
+document.querySelectorAll("#formsContainer form").forEach(form => {
+  form.addEventListener("submit", function () {
+    this.querySelectorAll('input[type="number"]').forEach(el => {
+      if (el.value && el.value.includes(',')) el.value = el.value.replace(',', '.');
+    });
+  }, { capture: true }); // run before your main submit handler
 });
 
 
