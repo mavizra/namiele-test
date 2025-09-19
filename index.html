@@ -178,6 +178,49 @@ button:hover { background-color: #7c9dbf; }
     grid-template-columns: 1fr;
   }
 }
+/* Invoice items — clean, responsive */
+.invoice-item { 
+  padding: 12px 0; 
+  border-bottom: 1px dashed #e6e4e0; 
+}
+
+.item-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr; /* title wider */
+  gap: 14px 16px;  /* row x column */
+  align-items: end; /* align inputs to the baseline */
+}
+
+/* prevent overflow and keep inputs full width */
+.item-grid > div { min-width: 0; }
+.item-grid input, .item-grid select { width: 100%; }
+
+/* keep long labels from stretching grid */
+.item-grid label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* remove button placement */
+.remove-item { 
+  display: inline-block; 
+  margin-top: 8px; 
+}
+
+/* medium screens: give the name field full width on the first row */
+@media (max-width: 720px) {
+  .item-grid { grid-template-columns: 1fr 1fr; }
+  .item-grid > div:nth-child(1) { grid-column: 1 / -1; }
+}
+
+/* small screens: stack into one column */
+@media (max-width: 520px) {
+  .item-grid { grid-template-columns: 1fr; }
+}
+
+/* Allow only the 4th column label to wrap */
+.item-grid > div:nth-child(4) label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
 
 
 </style>
@@ -194,6 +237,9 @@ button:hover { background-color: #7c9dbf; }
     <button type="button" class="form-select-btn" data-type="karkasiniai">Karkasinių Namelių Forma</button>
     <button type="button" class="form-select-btn" data-type="moduliniai">Modulinių Namelių Forma</button>
     <button type="button" class="form-select-btn" data-type="sld">SLD Forma</button>
+    <!-- add this as the 4th option -->
+<button type="button" class="form-select-btn" data-type="saskaita">Sąskaitos Forma</button>
+
   </div>
 </div>
 
@@ -501,7 +547,7 @@ button:hover { background-color: #7c9dbf; }
             <div class="error">Šis laukelis yra privalomas.</div>
             
     <label>Asmens Kodas</label>
-      <input name="asmKodas" placeholder="37061234567 arba 37061234567 ir 37061234567" required type="text" inputmode="numeric" pattern="^\d{8,13}(?:\sir\s\d{8,13})?$" title="Įveskite 1 arba 2 asmens kodus (8–13 skaitmenų), atskirtus žodžiu „ir“"
+<input name="asmKodas" placeholder="37061234567 arba 37061234567 ir 37061234567" required type="text" inputmode="numeric" pattern="^\d{8,13}(?:\sir\s\d{8,13})?$" title="Įveskite 1 arba 2 asmens kodus (8–13 skaitmenų), atskirtus žodžiu „ir“"
 />
           <div class="error">Šis laukelis yra privalomas.</div>
           
@@ -550,8 +596,129 @@ button:hover { background-color: #7c9dbf; }
     </div>
 
   </form>
+<!-- Sąskaitos (Invoice) -->
+<form id="form-saskaita" class="clientForm" novalidate style="display:none;">
+  <h2 style="text-align:center;margin-bottom:20px;">Sąskaitos išrašymo forma</h2>
+  <div class="progress-container"><div class="progress-bar"></div></div>
 
-</div>
+  <!-- Step 1: Gavėjas ir tiekėjas -->
+  <div class="step active">
+    <label>Kuri Namiele įmonė išrašinėja</label>
+    <select name="invoice_company" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="Namiele, UAB">Namiele, UAB</option>
+      <option value="Namiele Group, UAB">Namiele Group, UAB</option>
+      <option value="Rentifus, UAB">Rentifus, UAB?????</option>
+    </select>
+    <div class="error">Pasirinkite įmonę.</div>
+
+    <label>Vardas Pavardė / Įmonė</label>
+    <input name="invoice_client_name" placeholder="Jonas Jonaitis arba UAB Pavyzdys" required type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Asmens kodas / Įmonės kodas</label>
+    <input name="invoice_client_code" placeholder="123456789 arba 123456789" required type="text" inputmode="numeric"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>PVM m. k (jei yra)</label>
+    <input name="invoice_client_vat" placeholder="LT123456789" type="text"/>
+
+    <label>Adresas</label>
+    <input name="invoice_client_address" placeholder="Gatvė 1, Miestas" required type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+
+    <label>Gavėjo el. paštas</label>
+    <input name="invoice_client_email" placeholder="gavėjas@pastas.lt" required type="email"/>
+    <div class="error">Įveskite galiojantį el. pašto adresą.</div>
+
+    <div class="button-row">
+      <button type="button" class="back-to-selector" onclick="backToSelector()">← Grįžti į formos pasirinkimą</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Prekės / Paslaugos (repeatable) -->
+  <div class="step">
+    <div class="invoice-items" id="invoiceItems">
+      <div class="invoice-item">
+        <div class="item-grid">
+          <div>
+            <label>Prekės / Paslaugos pavadinimas</label>
+            <input name="item_name[]" required type="text" placeholder="Pvz. Projektavimo paslauga"/>
+            <div class="error">Šis laukelis yra privalomas.</div>
+          </div>
+          <div>
+            <label>Matavimo vnt</label>
+            <select name="item_unit[]" required>
+              <option value="" disabled selected>Pasirinkite</option>
+              <option value="vnt">vnt</option>
+              <option value="val">val</option>
+              <option value="m">m</option>
+              <option value="m2">m²</option>
+              <option value="m3">m³</option>
+            </select>
+            <div class="error">Pasirinkite matavimo vnt.</div>
+          </div>
+          <div>
+            <label>Kiekis</label>
+            <input name="item_qty[]" required type="number" step="any" inputmode="decimal" placeholder="1"/>
+            <div class="error">Įveskite kiekį.</div>
+          </div>
+          <div>
+            <label>Kaina (EUR, be PVM)</label>
+            <input name="item_price[]" required type="number" step="any" inputmode="decimal" placeholder="100"/>
+            <div class="error">Įveskite kainą.</div>
+          </div>
+        </div>
+        <button class="remove-item" type="button" onclick="removeInvoiceItem(this)" style="color:red;background:none;border:none;cursor:pointer;margin-top:6px;">✕ Pašalinti eilutę</button>
+      </div>
+    </div>
+
+    <button type="button" onclick="addInvoiceItem()" style="margin-top:10px;background-color:#92B1D0;color:white;padding:10px 20px;border:none;border-radius:12px;">+ Pridėti eilutę</button>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Nustatymai -->
+  <div class="step">
+    <label>Apmokėjimo terminas</label>
+    <select name="invoice_terms" required>
+      <option value="" disabled selected>Pasirinkite</option>
+      <option value="0">Tą pačia diena</option>
+      <option value="7">7 dienos</option>
+      <option value="14">14 dienų</option>
+      <option value="30">30 dienų</option>
+      <option value="45">45 dienos</option>
+    </select>
+    <div class="error">Pasirinkite apmokėjimo terminą.</div>
+
+    <label>Suma žodžiais</label>
+    <textarea name="invoice_total_words" placeholder="Suma žodžiais — automatiškai bus užpildyta" readonly></textarea>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button type="button" onclick="nextStep()">Toliau</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Pateikimas -->
+  <div class="step">
+    <p>Patikrinkite duomenis. Suma bus paskaičiuota automatiškai pagal eilutes.</p>
+    <div class="invoice-summary">
+      <div><strong>Bendra suma (EUR, be PVM):</strong> <span id="invoiceTotal">0.00</span></div>
+    </div>
+
+    <div class="button-row">
+      <button type="button" onclick="prevStep()">Atgal</button>
+      <button class="submit-button" type="submit">Pateikti</button>
+    </div>
+  </div>
+
+  <input type="hidden" name="form_type" value="saskaita">
+
 
 
 <a href="https://www.namiele.lt/" target="_blank" aria-label="Namiele pagrindinis puslapis">
@@ -582,6 +749,17 @@ window.startSelectedForm = function(type) {
   progressBar = currentForm.querySelector(".progress-bar");
   currentStep = 0;
   showStep(0);
+  
+  // rebuild window sizes (you already do this elsewhere, safe if it runs)
+if (typeof buildWindowSizeSelect === "function") {
+  currentForm.querySelectorAll('select[name="window_size[]"]').forEach(buildWindowSizeSelect);
+}
+
+// init invoice dropdowns/totals if this is the invoice form
+if (currentForm.id === 'form-saskaita') {
+  recalcInvoice(); // sets initial totals to 0.00
+}
+
 
   if (typeof restoreSessionData === "function") restoreSessionData(currentForm);
 };
@@ -685,6 +863,9 @@ json.windows = Array.from(winBlocks).map(block => {
   return { size, qty, prefix };
 });
 
+
+
+
 // Keep raw arrays for compatibility (same as before)
 json.window_size = json.windows.map(w => w.size);
 json.window_qty  = json.windows.map(w => w.qty);
@@ -719,6 +900,43 @@ Object.assign(json, windowFlat);
     const allDarb = Array.from(this.querySelectorAll('input[type="checkbox"][name="darbai[]"]')).map(i => i.value);
     allDarb.forEach(v => { json["darbai_" + makeKey(v)] = 0; });
     (json.darbai ?? []).forEach(v => { json["darbai_" + makeKey(v)] = 1; });
+
+// ----- Invoice: build items + totals if this is the invoice form -----
+if (this.id === 'form-saskaita' || json.form_type === 'saskaita') {
+  // Build item objects from parallel arrays (names already in json via [] collector)
+  const names  = json['item_name']  || [];
+  const units  = json['item_unit']  || [];
+  const qtys   = json['item_qty']   || [];
+  const prices = json['item_price'] || [];
+
+  const items = names.map((n, i) => ({
+    name: n,
+    unit: units[i] ?? "",
+    qty: Number((qtys[i] ?? "0").toString().replace(',', '.')) || 0,
+    price: Number((prices[i] ?? "0").toString().replace(',', '.')) || 0,
+    line_total: (Number((qtys[i] ?? "0").toString().replace(',', '.')) || 0) * (Number((prices[i] ?? "0").toString().replace(',', '.')) || 0)
+  }));
+
+  const total_net = items.reduce((s, it) => s + it.line_total, 0);
+
+  // Put a clean invoice object into payload
+  json.invoice = {
+    company: json.invoice_company || "",
+    client_name: json.invoice_client_name || "",
+    client_code: json.invoice_client_code || "",
+    client_vat: json.invoice_client_vat || "",
+    client_address: json.invoice_client_address || "",
+    client_email: json.invoice_client_email || "",
+    terms_days: Number(json.invoice_terms || 0) || 0,
+    domo_choice: json.domo_choice || "",
+    items,
+    total_net: Number(total_net.toFixed(2)),
+    total_words: json.invoice_total_words || "" // UI placeholder; feel free to override in n8n
+  };
+
+  // Optional: also flatten total into top-level keys for easy mapping in n8n
+  json.invoice_total_net = json.invoice.total_net;
+}
 
     // send to n8n with session headers
     try {
@@ -905,6 +1123,130 @@ const SIZE_PREFIX = {};
   });
 })();
 
+// ============ INVOICE HELPERS ============
+
+// Add an invoice item row
+function addInvoiceItem() {
+  if (!currentForm) return;
+  const wrap = currentForm.querySelector('#invoiceItems');
+  if (!wrap) return;
+  const first = wrap.querySelector('.invoice-item');
+  const clone = first.cloneNode(true);
+
+  // clear values
+  clone.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+
+  wrap.appendChild(clone);
+  recalcInvoice(); // update totals
+}
+
+// Remove an invoice item row
+function removeInvoiceItem(btn) {
+  const row = btn.closest('.invoice-item');
+  const wrap = row && row.parentElement;
+  if (!wrap) return;
+  if (wrap.querySelectorAll('.invoice-item').length > 1) {
+    row.remove();
+    recalcInvoice();
+  }
+}
+
+// Live recalc on item edits
+document.addEventListener('input', (e) => {
+  if (!currentForm) return;
+  if (!currentForm.querySelector('#invoiceItems')) return; // not on invoice form
+  const el = e.target;
+  if (!currentForm.contains(el)) return;
+  if (el.name === 'item_qty[]' || el.name === 'item_price[]') {
+    recalcInvoice();
+  }
+});
+
+// Compute total and fill “suma žodžiais”
+function recalcInvoice() {
+  if (!currentForm) return;
+  const items = currentForm.querySelectorAll('#invoiceItems .invoice-item');
+  if (!items.length) return;
+
+  let total = 0;
+  items.forEach(it => {
+    const qtyEl = it.querySelector('input[name="item_qty[]"]');
+    const priceEl = it.querySelector('input[name="item_price[]"]');
+    const qty = Number((qtyEl?.value || '0').toString().replace(',', '.')) || 0;
+    const price = Number((priceEl?.value || '0').toString().replace(',', '.')) || 0;
+    total += qty * price;
+  });
+
+  const totalEl = currentForm.querySelector('#invoiceTotal');
+  if (totalEl) totalEl.textContent = total.toFixed(2);
+
+  const wordsEl = currentForm.querySelector('textarea[name="invoice_total_words"]');
+  if (wordsEl) {
+    // Simple placeholder in English; recommend converting in n8n for Lithuanian grammar
+wordsEl.value = amountToWordsLt(total);
+
+  }
+}
+
+// Paprasta lietuviška suma žodžiais (0..999 999) – gerai UI'ui, gramatiką patikslink n8n'e jei reikia
+function numberToWordsLt(n) {
+  n = Math.floor(Math.abs(n));
+  const vien = ["nulis","vienas","du","trys","keturi","penki","šeši","septyni","aštuoni","devyni",
+                "dešimt","vienuolika","dvylika","trylika","keturiolika","penkiolika","šešiolika","septyniolika","aštuoniolika","devyniolika"];
+  const des = ["","","dvidešimt","trisdešimt","keturiasdešimt","penkiasdešimt","šešiasdešimt","septyniasdešimt","aštuoniasdešimt","devyniasdešimt"];
+
+  const iki100 = (x) => {
+    if (x < 20) return vien[x];
+    const t = Math.floor(x/10), v = x%10;
+    return des[t] + (v ? " " + vien[v] : "");
+  };
+  const iki1000 = (x) => {
+    if (x < 100) return iki100(x);
+    const s = Math.floor(x/100), lik = x%100;
+    const sZ = ["","šimtas","du šimtai","trys šimtai","keturi šimtai","penki šimtai","šeši šimtai","septyni šimtai","aštuoni šimtai","devyni šimtai"];
+    return sZ[s] + (lik ? " " + iki100(lik) : "");
+  };
+
+  if (n < 1000) return iki1000(n);
+  const tukst = Math.floor(n/1000), lik = n%1000;
+
+  // tūkstančių linksniavimas
+  const tForm = (k) => {
+    const d = k%10, dd = k%100;
+    if (k === 1) return "tūkstantis";
+    if (dd>=11 && dd<=19) return "tūkstančių";
+    if (d===1) return "tūkstantis";
+    if (d>=2 && d<=9) return "tūkstančiai";
+    return "tūkstančių";
+  };
+
+  return (iki1000(tukst) + " " + tForm(tukst) + (lik ? " " + iki1000(lik) : "")).trim();
+}
+
+// valiutos žodžiais: „euras/eurai/eurų“, „centas/centai/centų“
+function amountToWordsLt(total) {
+  const eur = Math.floor(total);
+  const cnt = Math.round((total - eur) * 100);
+
+  const form3 = (k, v1, v2, v3) => {
+    const d = k%10, dd = k%100;
+    if (k===1) return v1;
+    if (dd>=11 && dd<=19) return v3;
+    if (d>=2 && d<=9) return v2;
+    return v3;
+  };
+
+  const eurW = (eur===0) ? "nulis" : numberToWordsLt(eur);
+  const cntW = (cnt===0) ? "nulis" : numberToWordsLt(cnt);
+
+  const eurU = form3(eur, "euras", "eurai", "eurų");
+  const cntU = form3(cnt, "centas", "centai", "centų");
+
+  return `${eurW} ${eurU} ${cntW} ${cntU}`;
+}
 
 // Build the <select> with optgroups
 function buildWindowSizeSelect(selectEl) {
