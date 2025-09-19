@@ -501,7 +501,8 @@ button:hover { background-color: #7c9dbf; }
             <div class="error">Šis laukelis yra privalomas.</div>
             
     <label>Asmens Kodas</label>
-      <input name="asmKodas" placeholder="37061234567" required type="number"/>
+      <input name="asmKodas" placeholder="37061234567 arba 37061234567 ir 37061234567" required type="text" inputmode="numeric" pattern="^\d{8,13}(?:\sir\s\d{8,13})?$" title="Įveskite 1 arba 2 asmens kodus (8–13 skaitmenų), atskirtus žodžiu „ir“"
+/>
           <div class="error">Šis laukelis yra privalomas.</div>
           
       <label>Adresas</label>
