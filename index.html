@@ -693,8 +693,10 @@ button:hover { background-color: #7c9dbf; }
     </select>
     <div class="error">Pasirinkite apmokėjimo terminą.</div>
 
-    <label>Suma žodžiais</label>
-    <textarea name="invoice_total_words" placeholder="Suma žodžiais — automatiškai bus užpildyta" readonly></textarea>
+ <div class="checkbox-section-title"></div>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="AtvirkštinisPVM[]" value="ATV.PVM"> Atvirkštinis PVM</label>
+      </div>
 
     <div class="button-row">
       <button type="button" onclick="prevStep()">Atgal</button>
@@ -708,6 +710,10 @@ button:hover { background-color: #7c9dbf; }
     <div class="invoice-summary">
       <div><strong>Bendra suma (EUR, be PVM):</strong> <span id="invoiceTotal">0.00</span></div>
     </div>
+    
+        <label>Suma žodžiais</label>
+    <textarea name="invoice_total_words" placeholder="Suma žodžiais — automatiškai bus užpildyta" readonly></textarea>
+
 
     <div class="button-row">
       <button type="button" onclick="prevStep()">Atgal</button>
