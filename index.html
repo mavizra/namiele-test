@@ -707,12 +707,19 @@ button:hover { background-color: #7c9dbf; }
   <!-- Step 4: Pateikimas -->
   <div class="step">
     <p>Patikrinkite duomenis. Suma bus paskaičiuota automatiškai pagal eilutes.</p>
-    <div class="invoice-summary">
-      <div><strong>Bendra suma (EUR, be PVM):</strong> <span id="invoiceTotal">0.00</span></div>
-    </div>
-    
-        <label>Suma žodžiais</label>
-    <textarea name="invoice_total_words" placeholder="Suma žodžiais — automatiškai bus užpildyta" readonly></textarea>
+
+<div class="invoice-summary">
+  <div><strong>Iš viso be PVM:</strong> <span id="invoiceTotalNet">0.00</span> EUR</div>
+  <div><strong>PVM <span id="vatRateLabel">21</span>%:</strong> <span id="invoiceVAT">0.00</span> EUR</div>
+  <div><strong>Bendra suma (su PVM):</strong> <span id="invoiceTotalGross">0.00</span> EUR</div>
+</div>
+
+<label>Suma žodžiais (be PVM)</label>
+<textarea name="invoice_total_words_net" placeholder="Automatiškai" readonly></textarea>
+
+<label>Suma žodžiais (su PVM)</label>
+<textarea name="invoice_total_words" placeholder="Automatiškai" readonly></textarea>
+
 
 
     <div class="button-row">
@@ -754,6 +761,7 @@ window.startSelectedForm = function(type) {
   currentStep = 0;
   showStep(0);
   
+
   // rebuild window sizes (you already do this elsewhere, safe if it runs)
 if (typeof buildWindowSizeSelect === "function") {
   currentForm.querySelectorAll('select[name="window_size[]"]').forEach(buildWindowSizeSelect);
@@ -767,6 +775,8 @@ if (currentForm.id === 'form-saskaita') {
 
   if (typeof restoreSessionData === "function") restoreSessionData(currentForm);
 };
+
+const DEFAULT_VAT_RATE = 0.21; // 21%
 
 
 function updateProgressBar() {
@@ -805,6 +815,7 @@ function nextStep() {
 function prevStep() {
   if (currentStep > 0) { currentStep--; showStep(currentStep); }
 }
+
 
 document.querySelectorAll("#formsContainer form").forEach(form => {
   form.addEventListener("submit", async function (e) {
@@ -908,35 +919,50 @@ Object.assign(json, windowFlat);
 // ----- Invoice: build items + totals if this is the invoice form -----
 if (this.id === 'form-saskaita' || json.form_type === 'saskaita') {
   // Build item objects from parallel arrays (names already in json via [] collector)
-  const names  = json['item_name']  || [];
-  const units  = json['item_unit']  || [];
-  const qtys   = json['item_qty']   || [];
-  const prices = json['item_price'] || [];
+  // Build invoice object
+const names  = json['item_name']  || [];
+const units  = json['item_unit']  || [];
+const qtys   = json['item_qty']   || [];
+const prices = json['item_price'] || [];
 
-  const items = names.map((n, i) => ({
-    name: n,
-    unit: units[i] ?? "",
-    qty: Number((qtys[i] ?? "0").toString().replace(',', '.')) || 0,
-    price: Number((prices[i] ?? "0").toString().replace(',', '.')) || 0,
-    line_total: (Number((qtys[i] ?? "0").toString().replace(',', '.')) || 0) * (Number((prices[i] ?? "0").toString().replace(',', '.')) || 0)
-  }));
+const items = names.map((n, i) => ({
+  name: n,
+  unit: units[i] ?? "",
+  qty: Number((qtys[i] ?? "0").toString().replace(',', '.')) || 0,
+  price: Number((prices[i] ?? "0").toString().replace(',', '.')) || 0,
+})).map(it => ({ ...it, line_total: +(it.qty * it.price).toFixed(2) }));
 
-  const total_net = items.reduce((s, it) => s + it.line_total, 0);
+const total_net = +(items.reduce((s, it) => s + it.line_total, 0)).toFixed(2);
 
-  // Put a clean invoice object into payload
-  json.invoice = {
-    company: json.invoice_company || "",
-    client_name: json.invoice_client_name || "",
-    client_code: json.invoice_client_code || "",
-    client_vat: json.invoice_client_vat || "",
-    client_address: json.invoice_client_address || "",
-    client_email: json.invoice_client_email || "",
-    terms_days: Number(json.invoice_terms || 0) || 0,
-    domo_choice: json.domo_choice || "",
-    items,
-    total_net: Number(total_net.toFixed(2)),
-    total_words: json.invoice_total_words || "" // UI placeholder; feel free to override in n8n
-  };
+// reverse VAT flag
+const is_reverse_vat = !!this.querySelector('input[name="AtvirkštinisPVM[]"]:checked');
+
+const vat_rate = is_reverse_vat ? 0 : DEFAULT_VAT_RATE;
+const total_vat = +(total_net * vat_rate).toFixed(2);
+const total_gross = +(total_net + total_vat).toFixed(2);
+
+json.invoice = {
+  company: json.invoice_company || "",
+  client_name: json.invoice_client_name || "",
+  client_code: json.invoice_client_code || "",
+  client_vat: json.invoice_client_vat || "",
+  client_address: json.invoice_client_address || "",
+  client_email: json.invoice_client_email || "",
+  terms_days: Number(json.invoice_terms || 0) || 0,
+  items,
+  total_net,
+  vat_rate,
+  total_vat,
+  total_gross,
+  is_reverse_vat,
+  total_words_net: amountToWordsLt(total_net),
+  total_words: amountToWordsLt(total_gross) + (is_reverse_vat ? ' (atvirkštinis PVM)' : '')
+};
+
+// for convenience
+json.invoice_total_net   = total_net;
+json.invoice_total_vat   = total_vat;
+json.invoice_total_gross = total_gross;
 
   // Optional: also flatten total into top-level keys for easy mapping in n8n
   json.invoice_total_net = json.invoice.total_net;
@@ -1172,28 +1198,41 @@ document.addEventListener('input', (e) => {
 // Compute total and fill “suma žodžiais”
 function recalcInvoice() {
   if (!currentForm) return;
-  const items = currentForm.querySelectorAll('#invoiceItems .invoice-item');
-  if (!items.length) return;
 
-  let total = 0;
+  // suskaičiuojam sumas
+  const items = currentForm.querySelectorAll('#invoiceItems .invoice-item');
+  let net = 0;
   items.forEach(it => {
-    const qtyEl = it.querySelector('input[name="item_qty[]"]');
-    const priceEl = it.querySelector('input[name="item_price[]"]');
-    const qty = Number((qtyEl?.value || '0').toString().replace(',', '.')) || 0;
-    const price = Number((priceEl?.value || '0').toString().replace(',', '.')) || 0;
-    total += qty * price;
+    const qty = Number((it.querySelector('input[name="item_qty[]"]')?.value || '0').replace(',', '.')) || 0;
+    const price = Number((it.querySelector('input[name="item_price[]"]')?.value || '0').replace(',', '.')) || 0;
+    net += qty * price;
   });
 
-  const totalEl = currentForm.querySelector('#invoiceTotal');
-  if (totalEl) totalEl.textContent = total.toFixed(2);
+  const revVat = !!currentForm.querySelector('input[name="AtvirkštinisPVM[]"]:checked');
+  const vatRate = revVat ? 0 : DEFAULT_VAT_RATE;
+  const vat = +(net * vatRate).toFixed(2);
+  const gross = +(net + vat).toFixed(2);
 
-  const wordsEl = currentForm.querySelector('textarea[name="invoice_total_words"]');
-  if (wordsEl) {
-    // Simple placeholder in English; recommend converting in n8n for Lithuanian grammar
-wordsEl.value = amountToWordsLt(total);
+  // atvaizdavimas (be TypeScript !)
+  const netEl   = currentForm.querySelector('#invoiceTotalNet');
+  const vatEl   = currentForm.querySelector('#invoiceVAT');
+  const grossEl = currentForm.querySelector('#invoiceTotalGross');
+  const vatLbl  = currentForm.querySelector('#vatRateLabel');
+  if (netEl)   netEl.textContent   = net.toFixed(2);
+  if (vatEl)   vatEl.textContent   = vat.toFixed(2);
+  if (grossEl) grossEl.textContent = gross.toFixed(2);
+  if (vatLbl)  vatLbl.textContent  = Math.round(vatRate * 100);
 
-  }
+  // žodžiais: abu variantai
+  const wordsNet   = amountToWordsLt(net);
+  const wordsGross = amountToWordsLt(gross) + (revVat ? ' (atvirkštinis PVM)' : '');
+
+  const wordsNetEl   = currentForm.querySelector('textarea[name="invoice_total_words_net"]');
+  const wordsGrossEl = currentForm.querySelector('textarea[name="invoice_total_words"]'); // esamas
+  if (wordsNetEl)   wordsNetEl.value   = wordsNet;
+  if (wordsGrossEl) wordsGrossEl.value = wordsGross;
 }
+
 
 // Paprasta lietuviška suma žodžiais (0..999 999) – gerai UI'ui, gramatiką patikslink n8n'e jei reikia
 function numberToWordsLt(n) {
