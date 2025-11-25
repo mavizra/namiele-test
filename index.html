@@ -237,7 +237,8 @@ button:hover { background-color: #7c9dbf; }
     <button type="button" class="form-select-btn" data-type="karkasiniai">Karkasinių Namelių Forma</button>
     <button type="button" class="form-select-btn" data-type="moduliniai">Modulinių Namelių Forma</button>
     <button type="button" class="form-select-btn" data-type="sld">Statybos Leidimo Forma</button>
-        <button type="button" class="form-select-btn" data-type="archsutart">Architektūtinės Sutarties Forma</button>
+        <button type="button" class="form-select-btn" data-type="archsutart">Architektūrinės Sutarties Forma</button>
+        <button type="button" class="form-select-btn" data-type="konsutart">Konstruktyvo Sutarties Forma</button>
     <!-- add this as the 4th option -->
 <button type="button" class="form-select-btn" data-type="saskaita">Sąskaitos Forma</button>
 
@@ -633,8 +634,63 @@ button:hover { background-color: #7c9dbf; }
     <div class="step">
               <label>Projekto Pavadinimas</label>
       <input name="ProjektoPavadinimas" placeholder="Namiele Smėlio debesis 140m2 karkasinio namo projektas" required type="text"/>
-    <label>Per Kiek laiko bus projektas paruoštas</label>
-      <input name="ProjektoPeriodas" placeholder="6" required type="number"/>
+    <label>Per Kiek mėn bus projektas paruoštas</label>
+      <input name="ProjektoPeriodas" placeholder="2.5" required type="number"/>
+     <div class="error">Šis laukelis yra privalomas.</div>
+      <label>Projekto Kaina</label>
+    <input name="Kaina" placeholder="162.93" required type="number"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+      <div class="button-row"><button type="button" onclick="prevStep()">Atgal</button><button type="button" onclick="nextStep()">Toliau</button></div>
+    </div>
+    <div class="step">
+      <p>Visi duomenys užpildyti.</p>
+      <div class="button-row">
+        <button type="button" onclick="prevStep()">Atgal</button>
+        <button class="submit-button" type="submit">Pateikti</button>
+      </div>
+    </div>
+<input type="hidden" name="form_type" value="">
+    <div class="comment-fab collapsed">
+      <button type="button" class="comment-toggle" aria-expanded="false">✎</button>
+      <div class="comment-panel">
+        <label>Pastabos / Komentarai</label>
+        <textarea class="comment-text" name="comments" placeholder="Įrašykite pastabas..."></textarea>
+      </div>
+    </div>
+
+  </form>
+  
+  <!-- Konstruktyvo forma -->
+  <form id="form-konsutart" class="clientForm" novalidate style="display:none;">
+    <h2 style="text-align:center;margin-bottom:20px;">Konstruktyvo Sutarties Forma</h2>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+    <!-- Same steps -->
+    <div class="step active">
+      <label>Kliento Vardas ir Pavardė</label>
+      <input name="vardas" placeholder="Vardenis Pavardenis" required type="text"/>
+    <div class="error">Šis laukelis yra privalomas.</div>
+      
+      <label>El. paštas</label>
+      <input name="email" placeholder="VardenisPavardenis@gmail.com" required type="email"/>
+      <div class="error">Šis laukelis yra privalomas.</div>
+            
+    <label>Kodas</label>
+<input name="Kodas" placeholder="37061234567 arba PVM:37061234567 ir Įm:37061234567" required type="text" inputmode="numeric" pattern="^\d{8,13}(?:\sir\s\d{8,13})?$" title="Įveskite 1 arba 2 asmens kodus (8–13 skaitmenų), atskirtus žodžiu „ir“"
+/>
+          <div class="error">Šis laukelis yra privalomas.</div>
+          
+      <label>Adresas</label>
+      <input name="adresas" placeholder="Naujoji g.5-9, Rūdiškės, Trakų raj." required type="text"/>
+      <div class="error">Šis laukelis yra privalomas.</div>
+ <div class="button-row">
+    <button type="button" class="back-to-selector" onclick="backToSelector()">← Grįžti į formos pasirinkimą</button>
+  <button type="button" onclick="nextStep()">Toliau</button>
+</div>
+    </div>
+    
+    <div class="step">
+    <label>Per Kiek mėn bus projektas paruoštas</label>
+      <input name="ProjektoPeriodas" placeholder="1.5" required type="number"/>
      <div class="error">Šis laukelis yra privalomas.</div>
       <label>Projekto Kaina</label>
     <input name="Kaina" placeholder="162.93" required type="number"/>
